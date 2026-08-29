@@ -2,73 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MK Time — Admin</title>
   <link rel="stylesheet" href="style.css">
-
-  <style>
-    .record-admin-form{
-      display:grid;
-      gap:10px;
-    }
-
-    .record-admin-form input,
-    .record-admin-form select{
-      width:100%;
-      box-sizing:border-box;
-    }
-
-    .record-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-
-    .record-row-card{
-      margin-top:10px;
-    }
-
-    .record-row-grid{
-      display:grid;
-      grid-template-columns:1fr 1.5fr 1fr auto;
-      gap:8px;
-      align-items:center;
-    }
-
-    .record-row-grid input{
-      width:100%;
-      box-sizing:border-box;
-    }
-
-    .record-empty{
-      opacity:.7;
-      padding:10px 0;
-    }
-
-    @media(max-width:650px){
-      .record-row-grid{
-        grid-template-columns:1fr;
-      }
-    }
-  </style>
 </head>
 
 <body>
 
 <header class="top">
-
   <div>
     <h1>MK TIME</h1>
     <p>Admin Dashboard</p>
   </div>
 
-  <a class="admin-link" href="index.html">
-    Public Site
-  </a>
-
+  <a class="admin-link" href="index.html">Public Site</a>
 </header>
-
 
 <main>
 
@@ -96,9 +44,7 @@
       required
     >
 
-    <button type="submit">
-      Login
-    </button>
+    <button type="submit">Login</button>
 
     <p id="loginMsg"></p>
 
@@ -123,212 +69,148 @@
   </section>
 
 
-<!-- ================= ADD / EDIT BOX ================= -->
+  <!-- ================= ADD / EDIT BOX ================= -->
 
-<section class="section">
+  <section class="section">
 
-  <div class="section-title">
-    <span>ADD / EDIT BOX</span>
-  </div>
+    <div class="section-title">
+      <span>ADD / EDIT BOX</span>
+    </div>
 
-  <form id="boxForm" class="form">
+    <form id="boxForm" class="form">
 
-    <input
-      type="hidden"
-      id="editId"
-    >
+      <input
+        type="hidden"
+        id="editId"
+      >
 
-    <input
-      id="name"
-      placeholder="Name / announcement"
-      required
-    >
+      <input
+        id="name"
+        placeholder="Name / announcement"
+        required
+      >
 
-    <input
-      id="time"
-      type="time"
-      required
-    >
+      <input
+        id="time"
+        type="time"
+        required
+      >
 
-    <input
-      id="value"
-      placeholder="Result / status text"
-      required
-    >
+      <input
+        id="value"
+        placeholder="Result / status text"
+        required
+      >
 
-    <select id="section">
+      <select id="section">
 
-      <option value="live">
-        LIVE
-      </option>
+        <option value="live">
+          LIVE
+        </option>
 
-      <option value="next">
-        NEXT
-      </option>
+        <option value="next">
+          NEXT
+        </option>
 
-    </select>
+      </select>
 
-    <button
-      type="submit"
-      id="saveBtn"
-    >
-      Add Box
-    </button>
+      <button
+        type="submit"
+        id="saveBtn"
+      >
+        Add Box
+      </button>
 
-    <button
-      type="button"
-      id="cancelBtn"
-      class="secondary"
-      hidden
-    >
-      Cancel Edit
-    </button>
+      <button
+        type="button"
+        id="cancelBtn"
+        class="secondary"
+        hidden
+      >
+        Cancel Edit
+      </button>
 
-  </form>
+    </form>
 
-</section>
-
-
-<!-- ================= LIVE BOXES ================= -->
-
-<section class="section">
-
-  <div class="section-title">
-    <span>LIVE BOXES</span>
-  </div>
-
-  <div
-    id="liveAdmin"
-    class="cards"
-  ></div>
-
-</section>
+  </section>
 
 
-<!-- ================= NEXT BOXES ================= -->
+  <!-- ================= LIVE BOXES ================= -->
 
-<section class="section">
+  <section class="section">
 
-  <div class="section-title">
-    <span>NEXT BOXES</span>
-  </div>
+    <div class="section-title">
+      <span>LIVE BOXES</span>
+    </div>
 
-  <div
-    id="nextAdmin"
-    class="cards"
-  ></div>
+    <div
+      id="liveAdmin"
+      class="cards"
+    ></div>
 
-</section>
-
-
-<!-- ================= PREVIOUS RECORD MANAGER ================= -->
-
-<section class="section">
-
-  <div class="section-title">
-    <span>PREVIOUS RECORDS MANAGER</span>
-  </div>
-
-  <form id="recordForm" class="record-admin-form">
-
-    <input
-      type="hidden"
-      id="recordEditId"
-    >
-
-    <input
-      id="recordMonth"
-      placeholder="Month e.g. August 2026"
-      required
-    >
-
-    <input
-      id="recordDate"
-      placeholder="Date e.g. 01"
-      required
-    >
-
-    <input
-      id="recordName"
-      placeholder="Result Name e.g. DELHI BAZAR"
-      required
-    >
-
-    <input
-      id="recordValue"
-      placeholder="Result e.g. 68"
-      required
-    >
-
-    <button
-      type="submit"
-      id="recordSaveBtn"
-    >
-      Add Record
-    </button>
-
-    <button
-      type="button"
-      id="recordCancelBtn"
-      class="secondary"
-      hidden
-    >
-      Cancel Edit
-    </button>
-
-  </form>
+  </section>
 
 
-  <div
-    id="recordAdminList"
-    class="cards"
-  ></div>
+  <!-- ================= NEXT BOXES ================= -->
 
-</section>
+  <section class="section">
 
+    <div class="section-title">
+      <span>NEXT BOXES</span>
+    </div>
 
-<!-- ================= CHANGE PASSWORD ================= -->
+    <div
+      id="nextAdmin"
+      class="cards"
+    ></div>
 
-<section class="section">
-
-  <div class="section-title">
-    <span>CHANGE PASSWORD</span>
-  </div>
-
-  <form id="pwForm" class="form">
-
-    <input
-      id="newPassword"
-      type="password"
-      minlength="6"
-      placeholder="New password (6+ characters)"
-      required
-    >
-
-    <button type="submit">
-      Change Password
-    </button>
-
-    <p id="pwMsg"></p>
-
-  </form>
-
-</section>
+  </section>
 
 
-<!-- ================= LOGOUT ================= -->
+  <!-- ================= CHANGE PASSWORD ================= -->
 
-<button
-  id="logout"
-  class="secondary"
->
-  Logout
-</button>
+  <section class="section">
+
+    <div class="section-title">
+      <span>CHANGE PASSWORD</span>
+    </div>
+
+    <form id="pwForm" class="form">
+
+      <input
+        id="newPassword"
+        type="password"
+        minlength="6"
+        placeholder="New password (6+ characters)"
+        required
+      >
+
+      <button type="submit">
+        Change Password
+      </button>
+
+      <p id="pwMsg"></p>
+
+    </form>
+
+  </section>
+
+
+  <!-- ================= LOGOUT ================= -->
+
+  <button
+    id="logout"
+    class="secondary"
+  >
+    Logout
+  </button>
 
 </section>
 
 </main>
 
+
+<!-- ================= FIREBASE ================= -->
 
 <script type="module">
 
@@ -360,17 +242,17 @@ const $ = (id) => document.getElementById(id);
 
 /* ================= HTML ESCAPE ================= */
 
-function esc(value){
+function esc(value) {
 
   return String(value ?? "")
-    .replace(/[&<>"']/g,function(m){
+    .replace(/[&<>"']/g, function (m) {
 
       return {
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#039;"
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
       }[m];
 
     });
@@ -378,15 +260,15 @@ function esc(value){
 }
 
 
-/* ================= TIME ================= */
+/* ================= 24 HOUR TIME ================= */
 
-function to24(time){
+function to24(time) {
 
   const m = String(time).match(
     /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
   );
 
-  if(!m) return "";
+  if (!m) return "";
 
   let hour = Number(m[1]);
 
@@ -394,16 +276,18 @@ function to24(time){
 
   const ampm = m[3].toUpperCase();
 
-  if(ampm === "PM" && hour < 12){
+
+  if (ampm === "PM" && hour < 12) {
     hour += 12;
   }
 
-  if(ampm === "AM" && hour === 12){
+  if (ampm === "AM" && hour === 12) {
     hour = 0;
   }
 
+
   return (
-    String(hour).padStart(2,"0")
+    String(hour).padStart(2, "0")
     + ":"
     + minute
   );
@@ -411,9 +295,11 @@ function to24(time){
 }
 
 
-function to12(time){
+/* ================= 12 HOUR TIME ================= */
 
-  if(!time) return "";
+function to12(time) {
+
+  if (!time) return "";
 
   const parts = time.split(":");
 
@@ -425,8 +311,9 @@ function to12(time){
 
   hour = hour % 12 || 12;
 
+
   return (
-    String(hour).padStart(2,"0")
+    String(hour).padStart(2, "0")
     + ":"
     + minute
     + " "
@@ -436,19 +323,18 @@ function to12(time){
 }
 
 
-/* ================= RENDER LIVE / NEXT ================= */
+/* ================= RENDER BOXES ================= */
 
-function renderBoxes(){
+function render() {
 
-  ["live","next"].forEach(function(section){
+  ["live", "next"].forEach(function(section) {
 
-    const container =
-      $(section + "Admin");
+    const container = $(section + "Admin");
 
-    const boxes =
-      data[section] || [];
+    const boxes = data[section] || [];
 
-    if(boxes.length === 0){
+
+    if (boxes.length === 0) {
 
       container.innerHTML =
         '<p class="empty">No boxes.</p>';
@@ -457,56 +343,56 @@ function renderBoxes(){
 
     }
 
-    container.innerHTML =
-      boxes.map(function(box){
 
-        return `
-          <article class="card admin-card">
+    container.innerHTML = boxes.map(function(box) {
 
-            <div>
+      return `
+        <article class="card admin-card">
 
-              <small>
-                ${esc(box.time)}
-              </small>
+          <div>
 
-              <h3>
-                ${esc(box.name)}
-              </h3>
+            <small>
+              ${esc(box.time)}
+            </small>
 
-              <p>
-                ${esc(box.value)}
-                ${box.locked ? " • LOCKED" : ""}
-              </p>
+            <h3>
+              ${esc(box.name)}
+            </h3>
 
-            </div>
+            <p>
+              ${esc(box.value)}
+              ${box.locked ? " • LOCKED" : ""}
+            </p>
 
-            <div class="actions">
+          </div>
 
-              <button
-                onclick="editBox('${esc(box.id)}','${section}')"
-              >
-                Edit
-              </button>
+          <div class="actions">
 
-              <button
-                onclick="toggleLock('${esc(box.id)}','${section}')"
-              >
-                ${box.locked ? "Unlock" : "Lock"}
-              </button>
+            <button
+              onclick="editBox('${box.id}','${section}')"
+            >
+              Edit
+            </button>
 
-              <button
-                onclick="deleteBox('${esc(box.id)}','${section}')"
-                class="danger"
-              >
-                Delete
-              </button>
+            <button
+              onclick="toggleLock('${box.id}','${section}')"
+            >
+              ${box.locked ? "Unlock" : "Lock"}
+            </button>
 
-            </div>
+            <button
+              onclick="deleteBox('${box.id}','${section}')"
+              class="danger"
+            >
+              Delete
+            </button>
 
-          </article>
-        `;
+          </div>
 
-      }).join("");
+        </article>
+      `;
+
+    }).join("");
 
   });
 
@@ -515,138 +401,106 @@ function renderBoxes(){
 
 /* ================= SAVE FIREBASE ================= */
 
-async function saveData(){
+async function saveData() {
 
-  await setDoc(
-    siteRef,
-    data
-  );
+  await setDoc(siteRef, data);
 
-  renderAll();
+  render();
 
 }
 
 
 /* ================= EDIT BOX ================= */
 
-window.editBox =
-function(id,section){
+window.editBox = function(id, section) {
 
-  const boxes =
-    data[section] || [];
+  const boxes = data[section] || [];
 
-  const box =
-    boxes.find(function(item){
+  const box = boxes.find(function(item) {
 
-      return item.id === id;
+    return item.id === id;
 
-    });
+  });
 
-  if(!box) return;
 
-  $("editId").value =
-    box.id;
+  if (!box) return;
 
-  $("name").value =
-    box.name || "";
 
-  $("time").value =
-    to24(box.time);
+  $("editId").value = box.id;
 
-  $("value").value =
-    box.value || "";
+  $("name").value = box.name;
 
-  $("section").value =
-    section;
+  $("time").value = to24(box.time);
 
-  $("saveBtn").textContent =
-    "Save Changes";
+  $("value").value = box.value;
 
-  $("cancelBtn").hidden =
-    false;
+  $("section").value = section;
+
+  $("saveBtn").textContent = "Save Changes";
+
+  $("cancelBtn").hidden = false;
+
 
   window.scrollTo({
-    top:0,
-    behavior:"smooth"
+    top: 0,
+    behavior: "smooth"
   });
 
 };
 
 
-/* ================= LOCK ================= */
+/* ================= LOCK / UNLOCK ================= */
 
-window.toggleLock =
-async function(id,section){
+window.toggleLock = async function(id, section) {
 
-  const boxes =
-    data[section] || [];
+  const boxes = data[section] || [];
 
-  const box =
-    boxes.find(function(item){
+  const box = boxes.find(function(item) {
 
-      return item.id === id;
+    return item.id === id;
 
-    });
+  });
 
-  if(!box) return;
 
-  box.locked =
-    !box.locked;
+  if (!box) return;
 
-  try{
 
-    await saveData();
+  box.locked = !box.locked;
 
-  }catch(error){
 
-    console.error(error);
-
-    alert(
-      "Lock change nahi hua."
-    );
-
-  }
+  await saveData();
 
 };
 
 
 /* ================= DELETE BOX ================= */
 
-window.deleteBox =
-async function(id,section){
+window.deleteBox = async function(id, section) {
 
-  if(!confirm(
+  const ok = confirm(
     "Delete this box?"
-  )) return;
+  );
+
+
+  if (!ok) return;
+
 
   data[section] =
-    (data[section] || [])
-    .filter(function(box){
+    (data[section] || []).filter(function(box) {
 
       return box.id !== id;
 
     });
 
-  try{
 
-    await saveData();
-
-  }catch(error){
-
-    console.error(error);
-
-    alert(
-      "Delete nahi hua."
-    );
-
-  }
+  await saveData();
 
 };
 
 
-/* ================= RESET BOX ================= */
+/* ================= RESET FORM ================= */
 
-function resetBoxForm(){
+function resetForm() {
 
   $("editId").value = "";
 
@@ -658,69 +512,60 @@ function resetBoxForm(){
 
   $("section").value = "live";
 
-  $("saveBtn").textContent =
-    "Add Box";
+  $("saveBtn").textContent = "Add Box";
 
-  $("cancelBtn").hidden =
-    true;
+  $("cancelBtn").hidden = true;
 
 }
 
 
-/* ================= BOX FORM ================= */
+/* ================= ADD / EDIT FORM ================= */
 
-$("boxForm").onsubmit =
-async function(event){
+$("boxForm").onsubmit = async function(event) {
 
   event.preventDefault();
 
-  const editId =
-    $("editId").value;
 
-  const section =
-    $("section").value;
+  const editId = $("editId").value;
+
+  const section = $("section").value;
+
 
   const box = {
 
-    name:
-      $("name").value.trim(),
+    name: $("name").value.trim(),
 
-    time:
-      to12($("time").value),
+    time: to12($("time").value),
 
-    value:
-      $("value").value.trim(),
+    value: $("value").value.trim(),
 
-    locked:false
+    locked: false
 
   };
 
 
-  if(editId){
+  /* ===== EDIT EXISTING BOX ===== */
+
+  if (editId) {
 
     let oldBox = null;
 
-    for(
-      const sec of ["live","next"]
-    ){
+
+    for (const sec of ["live", "next"]) {
 
       const index =
-        (data[sec] || [])
-        .findIndex(function(item){
+        (data[sec] || []).findIndex(function(item) {
 
           return item.id === editId;
 
         });
 
-      if(index !== -1){
 
-        oldBox =
-          data[sec][index];
+      if (index !== -1) {
 
-        data[sec].splice(
-          index,
-          1
-        );
+        oldBox = data[sec][index];
+
+        data[sec].splice(index, 1);
 
         break;
 
@@ -728,27 +573,26 @@ async function(event){
 
     }
 
-    box.id =
-      editId;
 
-    box.locked =
-      oldBox
-        ? !!oldBox.locked
-        : false;
+    box.id = editId;
 
-  }
-
-  else{
-
-    box.id =
-      crypto.randomUUID();
+    box.locked = oldBox
+      ? !!oldBox.locked
+      : false;
 
   }
 
 
-  if(!Array.isArray(
-    data[section]
-  )){
+  /* ===== ADD NEW BOX ===== */
+
+  else {
+
+    box.id = crypto.randomUUID();
+
+  }
+
+
+  if (!Array.isArray(data[section])) {
 
     data[section] = [];
 
@@ -758,15 +602,15 @@ async function(event){
   data[section].push(box);
 
 
-  try{
+  try {
 
     await saveData();
 
-    resetBoxForm();
+    resetForm();
 
   }
 
-  catch(error){
+  catch (error) {
 
     console.error(error);
 
@@ -779,602 +623,27 @@ async function(event){
 };
 
 
-$("cancelBtn").onclick =
-function(){
+/* ================= CANCEL EDIT ================= */
 
-  resetBoxForm();
+$("cancelBtn").onclick = function() {
+
+  resetForm();
 
 };
-
-
-/* =====================================================
-   PREVIOUS RECORDS
-   ===================================================== */
-
-
-/*
-  Old format is supported:
-
-  ["01","Status","68"]
-
-  New format:
-
-  {
-    id:"...",
-    date:"01",
-    name:"DELHI BAZAR",
-    value:"68"
-  }
-
-  Isse purane records delete/convert nahi honge.
-*/
-
-
-function normalizeRecord(record,index){
-
-  if(
-    record &&
-    typeof record === "object" &&
-    !Array.isArray(record)
-  ){
-
-    return {
-
-      id:
-        String(
-          record.id ??
-          ("legacy-" + index)
-        ),
-
-      date:
-        String(
-          record.date ??
-          ""
-        ),
-
-      name:
-        String(
-          record.name ??
-          record.status ??
-          ""
-        ),
-
-      value:
-        String(
-          record.value ??
-          ""
-        )
-
-    };
-
-  }
-
-
-  if(Array.isArray(record)){
-
-    return {
-
-      id:
-        "legacy-" + index,
-
-      date:
-        String(record[0] ?? ""),
-
-      name:
-        String(record[1] ?? ""),
-
-      value:
-        String(record[2] ?? "")
-
-    };
-
-  }
-
-
-  return {
-
-    id:
-      "legacy-" + index,
-
-    date:"",
-    name:"",
-    value:""
-
-  };
-
-}
-
-
-/* ================= RECORD ADMIN LIST ================= */
-
-function renderRecordAdmin(){
-
-  const container =
-    $("recordAdminList");
-
-  if(!container) return;
-
-  const records =
-    data.records || {};
-
-  const months =
-    Object.keys(records)
-    .sort()
-    .reverse();
-
-  if(months.length === 0){
-
-    container.innerHTML =
-      '<p class="record-empty">No previous records yet.</p>';
-
-    return;
-
-  }
-
-
-  let html = "";
-
-
-  months.forEach(function(month){
-
-    const rows =
-      Array.isArray(records[month])
-        ? records[month]
-        : [];
-
-
-    html += `
-      <article class="card record-row-card">
-
-        <h3>
-          ${esc(month)}
-        </h3>
-    `;
-
-
-    if(rows.length === 0){
-
-      html +=
-        '<p class="record-empty">No records.</p>';
-
-    }
-
-
-    rows.forEach(function(raw,index){
-
-      const r =
-        normalizeRecord(
-          raw,
-          index
-        );
-
-      html += `
-
-        <div class="record-row-card">
-
-          <div class="record-row-grid">
-
-            <input
-              value="${esc(r.date)}"
-              data-month="${esc(month)}"
-              data-index="${index}"
-              data-field="date"
-              aria-label="Date"
-            >
-
-            <input
-              value="${esc(r.name)}"
-              data-month="${esc(month)}"
-              data-index="${index}"
-              data-field="name"
-              aria-label="Name"
-            >
-
-            <input
-              value="${esc(r.value)}"
-              data-month="${esc(month)}"
-              data-index="${index}"
-              data-field="value"
-              aria-label="Result"
-            >
-
-            <div class="record-actions">
-
-              <button
-                type="button"
-                onclick="editRecord('${esc(month)}',${index})"
-              >
-                Edit
-              </button>
-
-              <button
-                type="button"
-                class="danger"
-                onclick="deleteRecord('${esc(month)}',${index})"
-              >
-                Delete
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      `;
-
-    });
-
-
-    html += `
-
-        <div class="record-actions">
-
-          <button
-            type="button"
-            onclick="addRecordToMonth('${esc(month)}')"
-          >
-            + Add Row
-          </button>
-
-        </div>
-
-      </article>
-
-    `;
-
-  });
-
-
-  container.innerHTML =
-    html;
-
-}
-
-
-/* ================= ADD RECORD ================= */
-
-$("recordForm").onsubmit =
-async function(event){
-
-  event.preventDefault();
-
-  const month =
-    $("recordMonth")
-    .value
-    .trim();
-
-  const date =
-    $("recordDate")
-    .value
-    .trim();
-
-  const name =
-    $("recordName")
-    .value
-    .trim();
-
-  const value =
-    $("recordValue")
-    .value
-    .trim();
-
-  if(!month || !date || !name){
-
-    alert(
-      "Month, Date aur Name bharna zaroori hai."
-    );
-
-    return;
-
-  }
-
-
-  if(!data.records){
-
-    data.records = {};
-
-  }
-
-
-  if(!Array.isArray(
-    data.records[month]
-  )){
-
-    data.records[month] = [];
-
-  }
-
-
-  const editId =
-    $("recordEditId").value;
-
-
-  if(editId){
-
-    const parts =
-      editId.split("|");
-
-    const oldMonth =
-      parts[0];
-
-    const index =
-      Number(parts[1]);
-
-
-    if(
-      Array.isArray(
-        data.records[oldMonth]
-      )
-    ){
-
-      const old =
-        data.records[oldMonth][index];
-
-      if(old){
-
-        const updated = {
-
-          id:
-            old.id ??
-            crypto.randomUUID(),
-
-          date,
-          name,
-          value
-
-        };
-
-
-        if(
-          oldMonth === month
-        ){
-
-          data.records[oldMonth][index] =
-            updated;
-
-        }
-
-        else{
-
-          data.records[oldMonth]
-            .splice(index,1);
-
-          if(
-            !Array.isArray(
-              data.records[month]
-            )
-          ){
-
-            data.records[month] = [];
-
-          }
-
-          data.records[month]
-            .push(updated);
-
-        }
-
-      }
-
-    }
-
-  }
-
-  else{
-
-    data.records[month].push({
-
-      id:
-        crypto.randomUUID(),
-
-      date,
-      name,
-      value
-
-    });
-
-  }
-
-
-  try{
-
-    await saveData();
-
-    resetRecordForm();
-
-  }
-
-  catch(error){
-
-    console.error(error);
-
-    alert(
-      "Record save nahi hua."
-    );
-
-  }
-
-};
-
-
-/* ================= EDIT RECORD ================= */
-
-window.editRecord =
-function(month,index){
-
-  const rows =
-    data.records?.[month];
-
-  if(!Array.isArray(rows)) return;
-
-  const record =
-    normalizeRecord(
-      rows[index],
-      index
-    );
-
-  $("recordEditId").value =
-    month + "|" + index;
-
-  $("recordMonth").value =
-    month;
-
-  $("recordDate").value =
-    record.date;
-
-  $("recordName").value =
-    record.name;
-
-  $("recordValue").value =
-    record.value;
-
-  $("recordSaveBtn").textContent =
-    "Save Record Changes";
-
-  $("recordCancelBtn").hidden =
-    false;
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
-
-};
-
-
-/* ================= ADD ROW ================= */
-
-window.addRecordToMonth =
-function(month){
-
-  $("recordEditId").value =
-    "";
-
-  $("recordMonth").value =
-    month;
-
-  $("recordDate").value =
-    "";
-
-  $("recordName").value =
-    "";
-
-  $("recordValue").value =
-    "";
-
-  $("recordSaveBtn").textContent =
-    "Add Record";
-
-  $("recordCancelBtn").hidden =
-    false;
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
-
-};
-
-
-/* ================= DELETE RECORD ================= */
-
-window.deleteRecord =
-async function(month,index){
-
-  if(!confirm(
-    "Is record ko delete karna hai?"
-  )) return;
-
-
-  if(
-    !Array.isArray(
-      data.records?.[month]
-    )
-  ) return;
-
-
-  data.records[month]
-    .splice(index,1);
-
-
-  try{
-
-    await saveData();
-
-  }
-
-  catch(error){
-
-    console.error(error);
-
-    alert(
-      "Record delete nahi hua."
-    );
-
-  }
-
-};
-
-
-/* ================= RESET RECORD ================= */
-
-function resetRecordForm(){
-
-  $("recordEditId").value =
-    "";
-
-  $("recordMonth").value =
-    "";
-
-  $("recordDate").value =
-    "";
-
-  $("recordName").value =
-    "";
-
-  $("recordValue").value =
-    "";
-
-  $("recordSaveBtn").textContent =
-    "Add Record";
-
-  $("recordCancelBtn").hidden =
-    true;
-
-}
-
-
-$("recordCancelBtn").onclick =
-function(){
-
-  resetRecordForm();
-
-};
-
-
-/* ================= RENDER ALL ================= */
-
-function renderAll(){
-
-  renderBoxes();
-
-  renderRecordAdmin();
-
-}
 
 
 /* ================= LOGIN ================= */
 
-$("loginForm").onsubmit =
-async function(event){
+$("loginForm").onsubmit = async function(event) {
 
   event.preventDefault();
+
 
   $("loginMsg").textContent =
     "Logging in...";
 
-  try{
+
+  try {
 
     await signInWithEmailAndPassword(
       auth,
@@ -1382,18 +651,17 @@ async function(event){
       $("password").value
     );
 
-    $("loginMsg").textContent =
-      "";
+
+    $("loginMsg").textContent = "";
 
   }
 
-  catch(error){
+  catch (error) {
 
     console.error(error);
 
     $("loginMsg").textContent =
-      "Login failed: " +
-      error.message;
+      "Login failed: " + error.message;
 
   }
 
@@ -1402,25 +670,24 @@ async function(event){
 
 /* ================= LOGOUT ================= */
 
-$("logout").onclick =
-async function(){
+$("logout").onclick = async function() {
 
   await signOut(auth);
 
 };
 
 
-/* ================= PASSWORD ================= */
+/* ================= CHANGE PASSWORD ================= */
 
-$("pwForm").onsubmit =
-async function(event){
+$("pwForm").onsubmit = async function(event) {
 
   event.preventDefault();
 
-  const user =
-    auth.currentUser;
 
-  if(!user){
+  const user = auth.currentUser;
+
+
+  if (!user) {
 
     $("pwMsg").textContent =
       "Please login first.";
@@ -1430,22 +697,26 @@ async function(event){
   }
 
 
-  try{
+  const newPassword =
+    $("newPassword").value;
+
+
+  try {
 
     await updatePassword(
       user,
-      $("newPassword").value
+      newPassword
     );
+
 
     $("pwMsg").textContent =
       "Password changed successfully.";
 
-    $("newPassword").value =
-      "";
+    $("newPassword").value = "";
 
   }
 
-  catch(error){
+  catch (error) {
 
     console.error(error);
 
@@ -1459,61 +730,55 @@ async function(event){
 
 /* ================= AUTH STATE ================= */
 
-onAuthStateChanged(
-  auth,
-  function(user){
+onAuthStateChanged(auth, function(user) {
 
-    $("loginBox").hidden =
-      !!user;
+  $("loginBox").hidden = !!user;
 
-    $("dashboard").hidden =
-      !user;
+  $("dashboard").hidden = !user;
 
 
-    if(user){
+  if (user) {
 
-      onSnapshot(
-        siteRef,
-        function(snapshot){
+    onSnapshot(
+      siteRef,
+      function(snapshot) {
 
-          if(snapshot.exists()){
+        if (snapshot.exists()) {
 
-            data = {
-
-              live:[],
-               next: [],
-              records: {},
-              ...snapshot.data()
-            };
-
-          }
-
-          else {
-
-            data = {
-              live: [],
-              next: [],
-              records: {}
-            };
-
-          }
-
-          render();
-
-        },
-        function(error) {
-
-          console.error(
-            "Firebase error:",
-            error
-          );
+          data = {
+            live: [],
+            next: [],
+            records: {},
+            ...snapshot.data()
+          };
 
         }
-      );
 
-    }
+        else {
 
-  });
+          data = {
+            live: [],
+            next: [],
+            records: {}
+          };
+
+        }
+
+
+        render();
+
+      },
+      function(error) {
+
+        console.error(
+          "Firebase error:",
+          error
+        );
+
+      }
+    );
+
+  }
 
 });
 
@@ -1525,4 +790,4 @@ render();
 </script>
 
 </body>
-</html>
+    </html>
