@@ -3,7 +3,8 @@ import {
   onSnapshot,
   db,
   doc,
-  runTransaction
+  runTransaction,
+  onSnapshot as firestoreOnSnapshot
 } from "./firebase.js";
 
 
@@ -11,53 +12,47 @@ const fallback = {
 
   live: [
     {
-      id: "1",
-      name: "Morning Update",
-      time: "11:50 AM",
-      value: "Published",
-      locked: false
+      id:"1",
+      name:"Morning Update",
+      time:"11:50 AM",
+      value:"Published",
+      locked:false
     },
     {
-      id: "2",
-      name: "Afternoon Update",
-      time: "02:45 PM",
-      value: "Published",
-      locked: false
+      id:"2",
+      name:"Afternoon Update",
+      time:"02:45 PM",
+      value:"Published",
+      locked:false
     }
   ],
 
   next: [
     {
-      id: "3",
-      name: "Evening Update",
-      time: "04:15 PM",
-      value: "Scheduled",
-      locked: false
+      id:"3",
+      name:"Evening Update",
+      time:"04:15 PM",
+      value:"Scheduled",
+      locked:false
     }
   ],
 
-  records: {}
+  records:{}
 
 };
 
 
 let data = fallback;
 
-let viewUnsubscribers = [];
 
-let refreshInProgress = false;
-
-
-
-/* =========================
+/* =================================
    HTML ESCAPE
-========================= */
+================================= */
 
 function escapeHtml(v){
 
   return String(v ?? "").replace(
     /[&<>"']/g,
-
     m => ({
       "&":"&amp;",
       "<":"&lt;",
@@ -65,16 +60,14 @@ function escapeHtml(v){
       '"':"&quot;",
       "'":"&#039;"
     }[m])
-
   );
 
 }
 
 
-
-/* =========================
+/* =================================
    VIEWER ID
-========================= */
+================================= */
 
 function getViewerId(){
 
@@ -115,10 +108,9 @@ function getViewerId(){
 }
 
 
-
-/* =========================
+/* =================================
    TODAY KEY
-========================= */
+================================= */
 
 function todayKey(){
 
@@ -128,15 +120,11 @@ function todayKey(){
   return (
 
     d.getFullYear() +
-
     "-" +
-
     String(
       d.getMonth() + 1
     ).padStart(2,"0") +
-
     "-" +
-
     String(
       d.getDate()
     ).padStart(2,"0")
@@ -146,68 +134,64 @@ function todayKey(){
 }
 
 
-
-/* =========================
+/* =================================
    SAFE FIRESTORE ID
-========================= */
+================================= */
 
 function safeId(value){
 
   return String(
     value ?? ""
   )
+  .replace(
+    /[^A-Za-z0-9_-]/g,
+    "_"
+  )
+  .slice(0,120)
 
-    .replace(
-      /[^A-Za-z0-9_-]/g,
-      "_"
-    )
-
-    .slice(0,120)
-
-    || "unknown";
+  || "unknown";
 
 }
 
 
-
-/* =========================
+/* =================================
    HASH
-========================= */
+================================= */
 
 function hashString(value){
 
-  let h = 2166136261;
+  let hash = 2166136261;
 
 
   for(
-    let i = 0;
-    i < value.length;
+    let i=0;
+    i<value.length;
     i++
   ){
 
-    h ^= value.charCodeAt(i);
+    hash ^= value.charCodeAt(i);
 
-    h = Math.imul(
-      h,
-      16777619
-    );
+    hash =
+      Math.imul(
+        hash,
+        16777619
+      );
 
   }
 
 
   return (
-    h >>> 0
+    hash >>> 0
   )
-    .toString(16)
-    .padStart(8,"0");
+  .toString(16)
+  .padStart(8,"0");
 
 }
 
 
-
-/* =========================
+/* =================================
    RESULT ID
-========================= */
+================================= */
 
 function getResultId(result){
 
@@ -218,10 +202,9 @@ function getResultId(result){
 }
 
 
-
-/* =========================
+/* =================================
    COUNT VIEW
-========================= */
+================================= */
 
 async function countView(result){
 
@@ -229,7 +212,9 @@ async function countView(result){
     getResultId(result);
 
 
-  if(!resultId) return;
+  if(!resultId){
+    return;
+  }
 
 
   let viewerId;
@@ -242,11 +227,11 @@ async function countView(result){
 
   }
 
-  catch(err){
+  catch(error){
 
     console.error(
       "Viewer ID error:",
-      err
+      error
     );
 
     return;
@@ -257,6 +242,11 @@ async function countView(result){
   const day =
     todayKey();
 
+
+  /*
+   * Same browser + same result +
+   * same day = same marker.
+   */
 
   const markerId =
     hashString(
@@ -292,6 +282,10 @@ async function countView(result){
       db,
       async transaction => {
 
+        /*
+         * First check daily marker.
+         */
+
         const markerSnap =
           await transaction.get(
             markerRef
@@ -302,14 +296,17 @@ async function countView(result){
          * Already counted today.
          */
 
-        if(
-          markerSnap.exists()
-        ){
-
+        if(markerSnap.exists()){
           return;
-
         }
 
+
+        /*
+         * Create/update counter.
+         *
+         * The Firestore transaction makes
+         * concurrent updates safe.
+         */
 
         const counterSnap =
           await transaction.get(
@@ -317,52 +314,39 @@ async function countView(result){
           );
 
 
-        const oldCount =
+        const currentCount =
           counterSnap.exists()
 
-            ? Number(
-                counterSnap
-                  .data()
-                  .count || 0
-              )
+          ? Number(
+              counterSnap.data().count || 0
+            )
 
-            : 0;
+          : 0;
 
-
-        /*
-         * Increase counter.
-         */
 
         transaction.set(
           counterRef,
-
           {
             count:
-              oldCount + 1
+              currentCount + 1
           },
-
           {
-            merge: true
+            merge:true
           }
-
         );
 
 
         /*
-         * Daily marker.
+         * Store daily marker.
          */
 
         transaction.set(
           markerRef,
-
           {
-            day: day,
-
+            day:day,
             createdAt:
-              new Date()
-                .toISOString()
+              new Date().toISOString()
           }
-
         );
 
       }
@@ -370,11 +354,16 @@ async function countView(result){
 
   }
 
-  catch(err){
+  catch(error){
+
+    /*
+     * Permission/index/network errors
+     * must NOT stop the result page.
+     */
 
     console.error(
       "View counter error:",
-      err
+      error
     );
 
   }
@@ -382,10 +371,9 @@ async function countView(result){
 }
 
 
-
-/* =========================
-   TOTAL VIEWS DISPLAY
-========================= */
+/* =================================
+   TOTAL VIEWS
+================================= */
 
 function updateTotalViews(total){
 
@@ -395,7 +383,9 @@ function updateTotalViews(total){
     );
 
 
-  if(!el) return;
+  if(!el){
+    return;
+  }
 
 
   el.textContent =
@@ -406,27 +396,22 @@ function updateTotalViews(total){
 }
 
 
+/* =================================
+   VIEW COUNTS LISTENERS
+================================= */
 
-/* =========================
-   FIRESTORE VIEW LISTENERS
-========================= */
+let viewUnsubscribers = [];
 
-function listenToViewCounts(items){
 
-  /*
-   * Remove old listeners.
-   */
+function clearViewListeners(){
 
   viewUnsubscribers
     .forEach(
       unsubscribe => {
 
         try{
-
           unsubscribe();
-
         }
-
         catch(_){}
 
       }
@@ -435,16 +420,27 @@ function listenToViewCounts(items){
 
   viewUnsubscribers = [];
 
+}
 
-  const results =
-    (items || [])
+
+/* =================================
+   LIVE VIEW COUNTS
+================================= */
+
+function listenToViewCounts(results){
+
+  clearViewListeners();
+
+
+  const items =
+    (results || [])
       .filter(
         item =>
           getResultId(item)
       );
 
 
-  if(!results.length){
+  if(!items.length){
 
     updateTotalViews(0);
 
@@ -453,17 +449,34 @@ function listenToViewCounts(items){
   }
 
 
+  /*
+   * Avoid duplicate result IDs.
+   */
+
+  const unique =
+    Array.from(
+      new Map(
+        items.map(
+          item => [
+            getResultId(item),
+            item
+          ]
+        )
+      ).values()
+    );
+
+
   const counts =
     new Map();
 
 
-  results.forEach(result => {
+  unique.forEach(result => {
 
     const resultId =
       getResultId(result);
 
 
-    const ref =
+    const counterRef =
       doc(
         db,
         "resultViews",
@@ -472,36 +485,37 @@ function listenToViewCounts(items){
 
 
     const unsubscribe =
-      onSnapshot(
+      firestoreOnSnapshot(
 
-        ref,
+        counterRef,
 
         snap => {
 
-          counts.set(
-
-            resultId,
-
+          const count =
             snap.exists()
 
-              ? Number(
-                  snap
-                    .data()
-                    .count || 0
-                )
+            ? Number(
+                snap.data().count || 0
+              )
 
-              : 0
+            : 0;
 
+
+          counts.set(
+            resultId,
+            count
           );
 
 
           const total =
-            [...counts.values()]
-              .reduce(
-                (sum,value) =>
-                  sum + value,
-                0
-              );
+            Array.from(
+              counts.values()
+            )
+            .reduce(
+              (sum,value) =>
+                sum + value,
+              0
+            );
 
 
           updateTotalViews(
@@ -510,12 +524,11 @@ function listenToViewCounts(items){
 
         },
 
-
-        err => {
+        error => {
 
           console.error(
             "View count read error:",
-            err
+            error
           );
 
 
@@ -534,12 +547,14 @@ function listenToViewCounts(items){
 
 
           const total =
-            [...counts.values()]
-              .reduce(
-                (sum,value) =>
-                  sum + value,
-                0
-              );
+            Array.from(
+              counts.values()
+            )
+            .reduce(
+              (sum,value) =>
+                sum + value,
+              0
+            );
 
 
           updateTotalViews(
@@ -560,26 +575,24 @@ function listenToViewCounts(items){
 }
 
 
-
-/* =========================
-   RESULT CARDS
-========================= */
+/* =================================
+   CARDS
+================================= */
 
 function cards(id,items){
 
   const el =
-    document.getElementById(
-      id
-    );
+    document.getElementById(id);
 
 
-  if(!el) return;
+  if(!el){
+    return;
+  }
 
 
   /*
    * IMPORTANT:
-   * Views are NOT displayed
-   * inside result cards.
+   * Views are NOT shown on cards.
    */
 
   el.innerHTML =
@@ -601,7 +614,6 @@ function cards(id,items){
 
             </div>
 
-
             <strong>
               ${escapeHtml(x.value)}
             </strong>
@@ -619,18 +631,251 @@ function cards(id,items){
 }
 
 
+/* =================================
+   VERIFIED STATUS
+================================= */
 
-/* =========================
+function updateVerifiedStatus(){
+
+  const el =
+    document.getElementById(
+      "verifiedStatus"
+    );
+
+
+  if(!el){
+    return;
+  }
+
+
+  /*
+   * Existing result data में verified:true
+   * होने पर ही badge दिखेगा.
+   *
+   * इससे fake verification नहीं दिखाई जाएगी.
+   */
+
+  const allResults = [
+
+    ...(data.live || []),
+    ...(data.next || [])
+
+  ];
+
+
+  if(
+    allResults.length &&
+    allResults.every(
+      item =>
+        item.verified === true
+    )
+  ){
+
+    el.textContent =
+      "✓ Verified";
+
+  }
+
+  else{
+
+    el.textContent = "";
+
+  }
+
+}
+
+
+/* =================================
+   LAST UPDATED
+================================= */
+
+function updateLastUpdated(){
+
+  const el =
+    document.getElementById(
+      "lastUpdated"
+    );
+
+
+  if(!el){
+    return;
+  }
+
+
+  /*
+   * Only use timestamp if it already
+   * exists in existing Firestore data.
+   */
+
+  const value =
+    data.updatedAt ||
+    data.lastUpdated;
+
+
+  if(!value){
+
+    el.textContent = "";
+
+    return;
+
+  }
+
+
+  let date;
+
+
+  try{
+
+    date =
+      value?.toDate
+        ? value.toDate()
+        : new Date(value);
+
+  }
+
+  catch(_){
+
+    el.textContent = "";
+
+    return;
+
+  }
+
+
+  if(
+    Number.isNaN(
+      date.getTime()
+    )
+  ){
+
+    el.textContent = "";
+
+    return;
+
+  }
+
+
+  el.textContent =
+    "Updated " +
+    date.toLocaleTimeString(
+      undefined,
+      {
+        hour:"2-digit",
+        minute:"2-digit"
+      }
+    );
+
+}
+
+
+/* =================================
+   NOTIFICATIONS
+================================= */
+
+function setupNotifications(){
+
+  const btn =
+    document.getElementById(
+      "notifyBtn"
+    );
+
+
+  if(!btn){
+    return;
+  }
+
+
+  /*
+   * Browser notification support.
+   * It does NOT affect Firebase/results.
+   */
+
+  if(
+    !("Notification" in window)
+  ){
+
+    btn.hidden = true;
+
+    return;
+
+  }
+
+
+  btn.hidden = false;
+
+
+  if(
+    Notification.permission ===
+    "granted"
+  ){
+
+    btn.textContent =
+      "🔔 Notifications On";
+
+  }
+
+
+  btn.onclick =
+    async function(){
+
+      try{
+
+        const permission =
+          await Notification.requestPermission();
+
+
+        if(
+          permission === "granted"
+        ){
+
+          btn.textContent =
+            "🔔 Notifications On";
+
+          new Notification(
+            "MK Time",
+            {
+              body:
+                "Result notifications enabled."
+            }
+          );
+
+        }
+
+      }
+
+      catch(error){
+
+        console.error(
+          "Notification error:",
+          error
+        );
+
+      }
+
+    };
+
+}
+
+
+/* =================================
    RENDER
-========================= */
+================================= */
 
 function render(){
+
+  /*
+   * Existing LIVE.
+   */
 
   cards(
     "live",
     data.live
   );
 
+
+  /*
+   * Existing NEXT.
+   */
 
   cards(
     "next",
@@ -639,35 +884,41 @@ function render(){
 
 
   /*
-   * One total counter at the
-   * top of Today's Results.
+   * Views are counted for the
+   * results displayed on this page.
    */
 
   const displayedResults = [
 
     ...(data.live || []),
-
     ...(data.next || [])
 
   ];
 
+
+  displayedResults.forEach(
+    result =>
+      countView(result)
+  );
+
+
+  /*
+   * One total Views number at top.
+   */
 
   listenToViewCounts(
     displayedResults
   );
 
 
+  updateVerifiedStatus();
+
+  updateLastUpdated();
+
+
   /*
-   * Count displayed results.
-   * One view per result/device/day.
+   * Existing Previous Records.
    */
-
-  displayedResults
-    .forEach(
-      result =>
-        countView(result)
-    );
-
 
   const month =
     document.getElementById(
@@ -687,39 +938,32 @@ function render(){
     Object.keys(
       data.records || {}
     )
+    .sort()
+    .reverse()
+    .forEach(k => {
 
-      .sort()
-      .reverse()
-
-      .forEach(k => {
-
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          k;
-
-
-        option.textContent =
-          k;
-
-
-        month.appendChild(
-          option
+      const option =
+        document.createElement(
+          "option"
         );
 
-      });
+
+      option.value = k;
+
+      option.textContent = k;
+
+      month.appendChild(
+        option
+      );
+
+    });
 
 
     if(
       [...month.options]
         .some(
           option =>
-            option.value ===
-            current
+            option.value === current
         )
     ){
 
@@ -736,10 +980,9 @@ function render(){
 }
 
 
-
-/* =========================
-   TODAY DATE
-========================= */
+/* =================================
+   TODAY
+================================= */
 
 const today =
   document.getElementById(
@@ -764,10 +1007,9 @@ if(today){
 }
 
 
-
-/* =========================
+/* =================================
    YEAR
-========================= */
+================================= */
 
 const year =
   document.getElementById(
@@ -784,25 +1026,22 @@ if(year){
 }
 
 
-
-/* =========================
+/* =================================
    REFRESH
-========================= */
+================================= */
+
+let refreshing = false;
+
 
 window.refreshResults =
   function(){
 
-    if(
-      refreshInProgress
-    ){
-
+    if(refreshing){
       return;
-
     }
 
 
-    refreshInProgress =
-      true;
+    refreshing = true;
 
 
     const btn =
@@ -813,9 +1052,7 @@ window.refreshResults =
 
     if(btn){
 
-      btn.disabled =
-        true;
-
+      btn.disabled = true;
 
       btn.textContent =
         "↻ Refreshing...";
@@ -832,10 +1069,9 @@ window.refreshResults =
   };
 
 
-
-/* =========================
+/* =================================
    PREVIOUS RECORDS
-========================= */
+================================= */
 
 window.showRecords =
   function(){
@@ -892,7 +1128,6 @@ window.showRecords =
 
         </thead>
 
-
         <tbody>
 
           ${
@@ -930,10 +1165,9 @@ window.showRecords =
   };
 
 
-
-/* =========================
-   FIRESTORE RESULT DATA
-========================= */
+/* =================================
+   FIRESTORE
+================================= */
 
 onSnapshot(
 
@@ -948,7 +1182,6 @@ onSnapshot(
       data = {
 
         ...fallback,
-
         ...snap.data()
 
       };
@@ -960,11 +1193,16 @@ onSnapshot(
 
   },
 
+  error => {
 
-  err => {
+    /*
+     * Firebase error होने पर भी
+     * page को blank नहीं करेंगे.
+     */
 
     console.error(
-      err
+      "Site data error:",
+      error
     );
 
 
@@ -975,6 +1213,10 @@ onSnapshot(
 );
 
 
-/* Initial render */
+/* =================================
+   START
+================================= */
+
+setupNotifications();
 
 render();
