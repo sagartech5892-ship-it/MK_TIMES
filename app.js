@@ -4,19 +4,40 @@ import {
   db,
   doc,
   runTransaction,
-  increment
+  onSnapshot as firestoreOnSnapshot
 } from "./firebase.js";
 
 
-/* ================= FALLBACK ================= */
-
 const fallback = {
 
-  live: [],
+  live: [
+    {
+      id:"1",
+      name:"Morning Update",
+      time:"11:50 AM",
+      value:"Published",
+      locked:false
+    },
+    {
+      id:"2",
+      name:"Afternoon Update",
+      time:"02:45 PM",
+      value:"Published",
+      locked:false
+    }
+  ],
 
-  next: [],
+  next: [
+    {
+      id:"3",
+      name:"Evening Update",
+      time:"04:15 PM",
+      value:"Scheduled",
+      locked:false
+    }
+  ],
 
-  records: {}
+  records:{}
 
 };
 
@@ -24,51 +45,29 @@ const fallback = {
 let data = fallback;
 
 
-/* ================= HTML ESCAPE ================= */
+/* =================================
+   HTML ESCAPE
+================================= */
 
-function escapeHtml(value){
+function escapeHtml(v){
 
-  return String(value ?? "")
-    .replace(
-      /[&<>"']/g,
-      function(m){
-
-        return {
-
-          "&":"&amp;",
-          "<":"&lt;",
-          ">":"&gt;",
-          '"':"&quot;",
-          "'":"&#039;"
-
-        }[m];
-
-      }
-    );
+  return String(v ?? "").replace(
+    /[&<>"']/g,
+    m => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[m])
+  );
 
 }
 
 
-/* =====================================================
-   VIEW COUNTER
-   ===================================================== */
-
-
-/*
-  Browser/device identifier.
-
-  Normal refresh:
-  same localStorage ID
-  = same viewer.
-
-  One result:
-  maximum one counted view
-  per calendar day.
-
-  Important:
-  Browser hardware-level permanent ID
-  web browsers provide nahi karte.
-*/
+/* =================================
+   VIEWER ID
+================================= */
 
 function getViewerId(){
 
@@ -82,14 +81,19 @@ function getViewerId(){
   if(!id){
 
     id =
-      crypto.randomUUID
-        ? crypto.randomUUID()
-        :
-        Date.now().toString(36)
-        + "-"
-        + Math.random()
+      (
+        typeof crypto !== "undefined" &&
+        typeof crypto.randomUUID === "function"
+      )
+
+      ? crypto.randomUUID()
+
+      : Date.now().toString(36) +
+        "-" +
+        Math.random()
           .toString(36)
           .slice(2);
+
 
     localStorage.setItem(
       key,
@@ -104,31 +108,35 @@ function getViewerId(){
 }
 
 
-/* ================= TODAY KEY ================= */
+/* =================================
+   TODAY KEY
+================================= */
 
 function todayKey(){
 
-  const d =
-    new Date();
+  const d = new Date();
+
 
   return (
 
-    d.getFullYear()
-    + "-"
-    + String(
-        d.getMonth() + 1
-      ).padStart(2,"0")
-    + "-"
-    + String(
-        d.getDate()
-      ).padStart(2,"0")
+    d.getFullYear() +
+    "-" +
+    String(
+      d.getMonth() + 1
+    ).padStart(2,"0") +
+    "-" +
+    String(
+      d.getDate()
+    ).padStart(2,"0")
 
   );
 
 }
 
 
-/* ================= SAFE FIRESTORE ID ================= */
+/* =================================
+   SAFE FIRESTORE ID
+================================= */
 
 function safeId(value){
 
@@ -139,35 +147,33 @@ function safeId(value){
     /[^A-Za-z0-9_-]/g,
     "_"
   )
-  .slice(
-    0,
-    120
-  )
+  .slice(0,120)
+
   || "unknown";
 
 }
 
 
-/* ================= HASH ================= */
+/* =================================
+   HASH
+================================= */
 
 function hashString(value){
 
-  let h =
-    2166136261;
+  let hash = 2166136261;
 
 
   for(
-    let i = 0;
-    i < value.length;
+    let i=0;
+    i<value.length;
     i++
   ){
 
-    h ^=
-      value.charCodeAt(i);
+    hash ^= value.charCodeAt(i);
 
-    h =
+    hash =
       Math.imul(
-        h,
+        hash,
         16777619
       );
 
@@ -175,18 +181,17 @@ function hashString(value){
 
 
   return (
-    h >>> 0
+    hash >>> 0
   )
   .toString(16)
-  .padStart(
-    8,
-    "0"
-  );
+  .padStart(8,"0");
 
 }
 
 
-/* ================= RESULT ID ================= */
+/* =================================
+   RESULT ID
+================================= */
 
 function getResultId(result){
 
@@ -197,29 +202,19 @@ function getResultId(result){
 }
 
 
-/* =====================================================
+/* =================================
    COUNT VIEW
-   ===================================================== */
-
-
-/*
-  One viewer + one result + one day
-  = maximum one count.
-
-  Firestore transaction:
-    1. Check daily marker.
-    2. If marker exists -> don't count.
-    3. Create marker.
-    4. Atomic increment counter.
-*/
+================================= */
 
 async function countView(result){
 
   const resultId =
     getResultId(result);
 
-  if(!resultId)
+
+  if(!resultId){
     return;
+  }
 
 
   let viewerId;
@@ -248,13 +243,18 @@ async function countView(result){
     todayKey();
 
 
+  /*
+   * Same browser + same result +
+   * same day = same marker.
+   */
+
   const markerId =
     hashString(
-      viewerId
-      + "|"
-      + resultId
-      + "|"
-      + day
+      viewerId +
+      "|" +
+      resultId +
+      "|" +
+      day
     );
 
 
@@ -280,7 +280,11 @@ async function countView(result){
 
     await runTransaction(
       db,
-      async function(transaction){
+      async transaction => {
+
+        /*
+         * First check daily marker.
+         */
 
         const markerSnap =
           await transaction.get(
@@ -288,50 +292,61 @@ async function countView(result){
           );
 
 
-        if(
-          markerSnap.exists()
-        ){
+        /*
+         * Already counted today.
+         */
 
+        if(markerSnap.exists()){
           return;
-
         }
 
 
         /*
-          Atomic increment.
-          Existing count safe rahega.
-        */
+         * Create/update counter.
+         *
+         * The Firestore transaction makes
+         * concurrent updates safe.
+         */
+
+        const counterSnap =
+          await transaction.get(
+            counterRef
+          );
+
+
+        const currentCount =
+          counterSnap.exists()
+
+          ? Number(
+              counterSnap.data().count || 0
+            )
+
+          : 0;
+
 
         transaction.set(
-
           counterRef,
-
           {
             count:
-              increment(1)
+              currentCount + 1
           },
-
           {
             merge:true
           }
-
         );
 
 
+        /*
+         * Store daily marker.
+         */
+
         transaction.set(
-
           markerRef,
-
           {
-
             day:day,
-
             createdAt:
-              new Date()
-                .toISOString()
-
+              new Date().toISOString()
           }
-
         );
 
       }
@@ -340,6 +355,11 @@ async function countView(result){
   }
 
   catch(error){
+
+    /*
+     * Permission/index/network errors
+     * must NOT stop the result page.
+     */
 
     console.error(
       "View counter error:",
@@ -351,9 +371,9 @@ async function countView(result){
 }
 
 
-/* =====================================================
-   TOTAL VIEW DISPLAY
-   ===================================================== */
+/* =================================
+   TOTAL VIEWS
+================================= */
 
 function updateTotalViews(total){
 
@@ -362,51 +382,65 @@ function updateTotalViews(total){
       "totalViews"
     );
 
-  if(!el)
+
+  if(!el){
     return;
+  }
 
 
   el.textContent =
-    "👁️ "
-    + Number(total || 0)
-    + " Views";
+    "👁️ " +
+    Number(total || 0) +
+    " Views";
 
 }
 
 
-/* =====================================================
-   VIEW COUNT LISTENERS
-   ===================================================== */
+/* =================================
+   VIEW COUNTS LISTENERS
+================================= */
 
 let viewUnsubscribers = [];
 
 
-function listenToViewCounts(items){
+function clearViewListeners(){
 
   viewUnsubscribers
-    .forEach(function(unsubscribe){
+    .forEach(
+      unsubscribe => {
 
-      try{
-        unsubscribe();
+        try{
+          unsubscribe();
+        }
+        catch(_){}
+
       }
-      catch(_){}
-
-    });
+    );
 
 
   viewUnsubscribers = [];
 
-
-  const results =
-    (items || [])
-      .filter(function(item){
-
-        return !!getResultId(item);
-
-      });
+}
 
 
-  if(!results.length){
+/* =================================
+   LIVE VIEW COUNTS
+================================= */
+
+function listenToViewCounts(results){
+
+  clearViewListeners();
+
+
+  const items =
+    (results || [])
+      .filter(
+        item =>
+          getResultId(item)
+      );
+
+
+  if(!items.length){
 
     updateTotalViews(0);
 
@@ -415,17 +449,34 @@ function listenToViewCounts(items){
   }
 
 
+  /*
+   * Avoid duplicate result IDs.
+   */
+
+  const unique =
+    Array.from(
+      new Map(
+        items.map(
+          item => [
+            getResultId(item),
+            item
+          ]
+        )
+      ).values()
+    );
+
+
   const counts =
     new Map();
 
 
-  results.forEach(function(result){
+  unique.forEach(result => {
 
     const resultId =
       getResultId(result);
 
 
-    const ref =
+    const counterRef =
       doc(
         db,
         "resultViews",
@@ -434,40 +485,37 @@ function listenToViewCounts(items){
 
 
     const unsubscribe =
-      onSnapshot(
+      firestoreOnSnapshot(
 
-        ref,
+        counterRef,
 
-        function(snapshot){
+        snap => {
+
+          const count =
+            snap.exists()
+
+            ? Number(
+                snap.data().count || 0
+              )
+
+            : 0;
+
 
           counts.set(
-
             resultId,
-
-            snapshot.exists()
-              ?
-              Number(
-                snapshot.data()
-                  .count || 0
-              )
-              :
-              0
-
+            count
           );
 
 
           const total =
-            [...counts.values()]
-              .reduce(
-                function(sum,value){
-
-                  return (
-                    sum + value
-                  );
-
-                },
-                0
-              );
+            Array.from(
+              counts.values()
+            )
+            .reduce(
+              (sum,value) =>
+                sum + value,
+              0
+            );
 
 
           updateTotalViews(
@@ -476,11 +524,41 @@ function listenToViewCounts(items){
 
         },
 
-        function(error){
+        error => {
 
           console.error(
             "View count read error:",
             error
+          );
+
+
+          if(
+            !counts.has(
+              resultId
+            )
+          ){
+
+            counts.set(
+              resultId,
+              0
+            );
+
+          }
+
+
+          const total =
+            Array.from(
+              counts.values()
+            )
+            .reduce(
+              (sum,value) =>
+                sum + value,
+              0
+            );
+
+
+          updateTotalViews(
+            total
           );
 
         }
@@ -497,317 +575,307 @@ function listenToViewCounts(items){
 }
 
 
-/* =====================================================
-   LIVE / NEXT CARDS
-   ===================================================== */
+/* =================================
+   CARDS
+================================= */
 
-function cards(
-  id,
-  items
-){
+function cards(id,items){
 
   const el =
     document.getElementById(id);
 
-  if(!el)
-    return;
 
+  if(!el){
+    return;
+  }
+
+
+  /*
+   * IMPORTANT:
+   * Views are NOT shown on cards.
+   */
 
   el.innerHTML =
-
     (items || [])
-      .map(function(x){
-
-        return `
+      .map(
+        x => `
 
           <article class="card">
 
             <div>
 
               <small>
-                ${escapeHtml(
-                  x.time
-                )}
+                ${escapeHtml(x.time)}
               </small>
 
               <h3>
-                ${escapeHtml(
-                  x.name
-                )}
+                ${escapeHtml(x.name)}
               </h3>
 
             </div>
 
-            <div>
-
-              <strong>
-                ${escapeHtml(
-                  x.value
-                )}
-              </strong>
-
-            </div>
+            <strong>
+              ${escapeHtml(x.value)}
+            </strong>
 
           </article>
 
-        `;
-
-      })
+        `
+      )
       .join("")
 
     ||
 
     '<p class="empty">No announcements yet.</p>';
 
-
-  /*
-    Count displayed results.
-
-    Daily marker prevents refresh
-    from counting again.
-  */
-
-  (items || [])
-    .forEach(function(x){
-
-      countView(x);
-
-    });
-
 }
 
 
-/* =====================================================
-   RECORD NORMALIZER
-   ===================================================== */
+/* =================================
+   VERIFIED STATUS
+================================= */
 
-
-/*
-  Old record:
-
-  ["01","Status","68"]
-
-  New record:
-
-  {
-    id:"...",
-    date:"01",
-    name:"DELHI BAZAR",
-    value:"68"
-  }
-
-  Both formats supported.
-*/
-
-function normalizeRecord(
-  record,
-  index
-){
-
-  if(
-    record &&
-    typeof record === "object" &&
-    !Array.isArray(record)
-  ){
-
-    return {
-
-      id:
-        String(
-          record.id ??
-          ("legacy-" + index)
-        ),
-
-      date:
-        String(
-          record.date ??
-          ""
-        ),
-
-      name:
-        String(
-          record.name ??
-          record.status ??
-          ""
-        ),
-
-      value:
-        String(
-          record.value ??
-          ""
-        )
-
-    };
-
-  }
-
-
-  if(
-    Array.isArray(record)
-  ){
-
-    return {
-
-      id:
-        "legacy-" + index,
-
-      date:
-        String(
-          record[0] ?? ""
-        ),
-
-      name:
-        String(
-          record[1] ?? ""
-        ),
-
-      value:
-        String(
-          record[2] ?? ""
-        )
-
-    };
-
-  }
-
-
-  return {
-
-    id:
-      "legacy-" + index,
-
-    date:"",
-    name:"",
-    value:""
-
-  };
-
-}
-
-
-/* =====================================================
-   PREVIOUS RECORDS
-   ===================================================== */
-
-window.showRecords =
-function(){
-
-  const month =
-    document.getElementById(
-      "month"
-    );
+function updateVerifiedStatus(){
 
   const el =
     document.getElementById(
-      "records"
+      "verifiedStatus"
     );
 
 
-  if(!month || !el)
+  if(!el){
     return;
+  }
 
 
-  const rows =
-    data.records?.[
-      month.value
-    ] || [];
+  /*
+   * Existing result data में verified:true
+   * होने पर ही badge दिखेगा.
+   *
+   * इससे fake verification नहीं दिखाई जाएगी.
+   */
+
+  const allResults = [
+
+    ...(data.live || []),
+    ...(data.next || [])
+
+  ];
 
 
-  if(!rows.length){
+  if(
+    allResults.length &&
+    allResults.every(
+      item =>
+        item.verified === true
+    )
+  ){
 
-    el.innerHTML =
-      '<p class="empty">No records available.</p>';
+    el.textContent =
+      "✓ Verified";
+
+  }
+
+  else{
+
+    el.textContent = "";
+
+  }
+
+}
+
+
+/* =================================
+   LAST UPDATED
+================================= */
+
+function updateLastUpdated(){
+
+  const el =
+    document.getElementById(
+      "lastUpdated"
+    );
+
+
+  if(!el){
+    return;
+  }
+
+
+  /*
+   * Only use timestamp if it already
+   * exists in existing Firestore data.
+   */
+
+  const value =
+    data.updatedAt ||
+    data.lastUpdated;
+
+
+  if(!value){
+
+    el.textContent = "";
 
     return;
 
   }
 
 
-  el.innerHTML = `
-
-    <div style="overflow-x:auto">
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>Date</th>
-
-            <th>Name</th>
-
-            <th>Value</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          ${
-            rows
-              .map(function(raw,index){
-
-                const r =
-                  normalizeRecord(
-                    raw,
-                    index
-                  );
+  let date;
 
 
-                return `
+  try{
 
-                  <tr>
+    date =
+      value?.toDate
+        ? value.toDate()
+        : new Date(value);
 
-                    <td>
-                      ${escapeHtml(
-                        r.date
-                      )}
-                    </td>
+  }
 
-                    <td>
-                      ${escapeHtml(
-                        r.name
-                      )}
-                    </td>
+  catch(_){
 
-                    <td>
-                      ${escapeHtml(
-                        r.value
-                      )}
-                    </td>
+    el.textContent = "";
 
-                  </tr>
+    return;
 
-                `;
-
-              })
-              .join("")
-          }
-
-        </tbody>
-
-      </table>
-
-    </div>
-
-  `;
-
-};
+  }
 
 
-/* =====================================================
+  if(
+    Number.isNaN(
+      date.getTime()
+    )
+  ){
+
+    el.textContent = "";
+
+    return;
+
+  }
+
+
+  el.textContent =
+    "Updated " +
+    date.toLocaleTimeString(
+      undefined,
+      {
+        hour:"2-digit",
+        minute:"2-digit"
+      }
+    );
+
+}
+
+
+/* =================================
+   NOTIFICATIONS
+================================= */
+
+function setupNotifications(){
+
+  const btn =
+    document.getElementById(
+      "notifyBtn"
+    );
+
+
+  if(!btn){
+    return;
+  }
+
+
+  /*
+   * Browser notification support.
+   * It does NOT affect Firebase/results.
+   */
+
+  if(
+    !("Notification" in window)
+  ){
+
+    btn.hidden = true;
+
+    return;
+
+  }
+
+
+  btn.hidden = false;
+
+
+  if(
+    Notification.permission ===
+    "granted"
+  ){
+
+    btn.textContent =
+      "🔔 Notifications On";
+
+  }
+
+
+  btn.onclick =
+    async function(){
+
+      try{
+
+        const permission =
+          await Notification.requestPermission();
+
+
+        if(
+          permission === "granted"
+        ){
+
+          btn.textContent =
+            "🔔 Notifications On";
+
+          new Notification(
+            "MK Time",
+            {
+              body:
+                "Result notifications enabled."
+            }
+          );
+
+        }
+
+      }
+
+      catch(error){
+
+        console.error(
+          "Notification error:",
+          error
+        );
+
+      }
+
+    };
+
+}
+
+
+/* =================================
    RENDER
-   ===================================================== */
+================================= */
 
 function render(){
+
+  /*
+   * Existing LIVE.
+   */
 
   cards(
     "live",
     data.live
   );
 
+
+  /*
+   * Existing NEXT.
+   */
 
   cards(
     "next",
@@ -816,19 +884,41 @@ function render(){
 
 
   /*
-    Total view counter:
-    LIVE + NEXT displayed results.
-  */
+   * Views are counted for the
+   * results displayed on this page.
+   */
 
-  listenToViewCounts(
+  const displayedResults = [
 
-    [
-      ...(data.live || []),
-      ...(data.next || [])
-    ]
+    ...(data.live || []),
+    ...(data.next || [])
 
+  ];
+
+
+  displayedResults.forEach(
+    result =>
+      countView(result)
   );
 
+
+  /*
+   * One total Views number at top.
+   */
+
+  listenToViewCounts(
+    displayedResults
+  );
+
+
+  updateVerifiedStatus();
+
+  updateLastUpdated();
+
+
+  /*
+   * Existing Previous Records.
+   */
 
   const month =
     document.getElementById(
@@ -842,8 +932,7 @@ function render(){
       month.value;
 
 
-    month.innerHTML =
-      "";
+    month.innerHTML = "";
 
 
     Object.keys(
@@ -851,18 +940,17 @@ function render(){
     )
     .sort()
     .reverse()
-    .forEach(function(key){
+    .forEach(k => {
 
       const option =
         document.createElement(
           "option"
         );
 
-      option.value =
-        key;
 
-      option.textContent =
-        key;
+      option.value = k;
+
+      option.textContent = k;
 
       month.appendChild(
         option
@@ -873,14 +961,10 @@ function render(){
 
     if(
       [...month.options]
-        .some(function(option){
-
-          return (
-            option.value ===
-            current
-          );
-
-        })
+        .some(
+          option =>
+            option.value === current
+        )
     ){
 
       month.value =
@@ -896,9 +980,9 @@ function render(){
 }
 
 
-/* =====================================================
+/* =================================
    TODAY
-   ===================================================== */
+================================= */
 
 const today =
   document.getElementById(
@@ -913,24 +997,19 @@ if(today){
       .toLocaleDateString(
         undefined,
         {
-
           weekday:"long",
-
           year:"numeric",
-
           month:"long",
-
           day:"numeric"
-
         }
       );
 
 }
 
 
-/* =====================================================
+/* =================================
    YEAR
-   ===================================================== */
+================================= */
 
 const year =
   document.getElementById(
@@ -947,86 +1026,163 @@ if(year){
 }
 
 
-/* =====================================================
+/* =================================
    REFRESH
-   ===================================================== */
+================================= */
 
-let refreshing =
-  false;
+let refreshing = false;
 
 
 window.refreshResults =
-function(){
+  function(){
 
-  if(refreshing)
-    return;
-
-
-  refreshing =
-    true;
+    if(refreshing){
+      return;
+    }
 
 
-  const btn =
-    document.getElementById(
-      "refreshBtn"
+    refreshing = true;
+
+
+    const btn =
+      document.getElementById(
+        "refreshBtn"
+      );
+
+
+    if(btn){
+
+      btn.disabled = true;
+
+      btn.textContent =
+        "↻ Refreshing...";
+
+    }
+
+
+    setTimeout(
+      () =>
+        location.reload(),
+      150
     );
 
-
-  if(btn){
-
-    btn.disabled =
-      true;
-
-    btn.textContent =
-      "↻ Refreshing...";
-
-  }
+  };
 
 
-  /*
-    Existing refresh behavior
-    preserved.
-  */
+/* =================================
+   PREVIOUS RECORDS
+================================= */
 
-  setTimeout(
-    function(){
+window.showRecords =
+  function(){
 
-      location.reload();
-
-    },
-    150
-  );
-
-};
+    const month =
+      document.getElementById(
+        "month"
+      );
 
 
-/* =====================================================
-   FIRESTORE REAL-TIME
-   ===================================================== */
+    const el =
+      document.getElementById(
+        "records"
+      );
+
+
+    if(
+      !month ||
+      !el
+    ){
+
+      return;
+
+    }
+
+
+    const rows =
+      data.records?.[
+        month.value
+      ] || [];
+
+
+    el.innerHTML = `
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Date
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Value
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${
+            rows
+              .map(
+                r => `
+
+                  <tr>
+
+                    <td>
+                      ${escapeHtml(r[0])}
+                    </td>
+
+                    <td>
+                      ${escapeHtml(r[1])}
+                    </td>
+
+                    <td>
+                      ${escapeHtml(r[2])}
+                    </td>
+
+                  </tr>
+
+                `
+              )
+              .join("")
+          }
+
+        </tbody>
+
+      </table>
+
+    `;
+
+  };
+
+
+/* =================================
+   FIRESTORE
+================================= */
 
 onSnapshot(
 
   siteRef,
 
-  function(snapshot){
+  snap => {
 
-    if(snapshot.exists()){
+    if(
+      snap.exists()
+    ){
 
       data = {
 
         ...fallback,
-
-        ...snapshot.data()
-
-      };
-
-    }
-
-    else{
-
-      data = {
-
-        ...fallback
+        ...snap.data()
 
       };
 
@@ -1037,18 +1193,18 @@ onSnapshot(
 
   },
 
-  function(error){
+  error => {
+
+    /*
+     * Firebase error होने पर भी
+     * page को blank नहीं करेंगे.
+     */
 
     console.error(
-      "Firebase error:",
+      "Site data error:",
       error
     );
 
-
-    /*
-      Existing page still renders
-      instead of becoming blank.
-    */
 
     render();
 
@@ -1057,8 +1213,10 @@ onSnapshot(
 );
 
 
-/* =====================================================
-   INITIAL RENDER
-   ===================================================== */
+/* =================================
+   START
+================================= */
+
+setupNotifications();
 
 render();
