@@ -5,20 +5,81 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MK Time — Results & Schedule</title>
 <link rel="stylesheet" href="style.css">
+
+<style>
+  /* Views/status area - existing design को disturb न करने के लिए */
+  .hero-title-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .result-status{
+    text-align:right;
+    white-space:nowrap;
+    font-size:13px;
+  }
+
+  .total-views{
+    font-weight:700;
+  }
+
+  .verified-status{
+    margin-top:4px;
+    font-size:12px;
+  }
+
+  .last-updated{
+    margin-top:3px;
+    font-size:11px;
+    opacity:.7;
+  }
+
+  .notify-btn{
+    margin-top:6px;
+    padding:5px 9px;
+    border:0;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:11px;
+  }
+
+  @media(max-width:600px){
+    .hero-title-row{
+      align-items:flex-start;
+    }
+
+    .result-status{
+      font-size:11px;
+    }
+
+    .verified-status{
+      font-size:10px;
+    }
+  }
+</style>
+
 </head>
+
 <body>
 
 <header class="top">
+
   <div>
     <h1>MK TIME</h1>
     <p>Daily Results</p>
   </div>
+
   <a class="admin-link" href="admin.html">Admin</a>
+
 </header>
+
 
 <main>
 
   <section class="hero">
+
     <div class="hero-title-row">
 
       <div>
@@ -26,32 +87,69 @@
         <p id="today"></p>
       </div>
 
-      <div id="totalViews"
-           class="total-views"
-           aria-live="polite">
-        👁️ 0 Views
+
+      <div class="result-status">
+
+        <div
+          id="totalViews"
+          class="total-views"
+          aria-live="polite"
+        >
+          👁️ 0 Views
+        </div>
+
+
+        <div
+          id="verifiedStatus"
+          class="verified-status"
+        ></div>
+
+
+        <div
+          id="lastUpdated"
+          class="last-updated"
+        ></div>
+
+
+        <button
+          id="notifyBtn"
+          class="notify-btn"
+          type="button"
+          hidden
+        >
+          🔔 Notifications
+        </button>
+
       </div>
 
     </div>
+
   </section>
 
 
   <section class="section">
 
     <div class="section-head">
+
       <div class="section-title">
         <span>LIVE</span>
       </div>
 
-      <button id="refreshBtn"
-              class="refresh-btn"
-              type="button"
-              onclick="refreshResults()">
+      <button
+        id="refreshBtn"
+        class="refresh-btn"
+        type="button"
+        onclick="refreshResults()"
+      >
         ↻ Refresh
       </button>
+
     </div>
 
-    <div id="live" class="cards"></div>
+    <div
+      id="live"
+      class="cards"
+    ></div>
 
   </section>
 
@@ -62,7 +160,10 @@
       <span>NEXT</span>
     </div>
 
-    <div id="next" class="cards"></div>
+    <div
+      id="next"
+      class="cards"
+    ></div>
 
   </section>
 
@@ -74,11 +175,19 @@
     </div>
 
     <div class="record-tools">
+
       <select id="month"></select>
-      <button onclick="showRecords()">View Record</button>
+
+      <button onclick="showRecords()">
+        View Record
+      </button>
+
     </div>
 
-    <div id="records" class="records"></div>
+    <div
+      id="records"
+      class="records"
+    ></div>
 
   </section>
 
@@ -88,20 +197,33 @@
     <h2>📌 Important Information</h2>
 
     <ul>
-      <li>Published information is displayed for public viewing.</li>
-      <li>Locked entries cannot be changed from the public page.</li>
-      <li>Names, dates and times can be configured by authorized administrators.</li>
+
+      <li>
+        Published information is displayed for public viewing.
+      </li>
+
+      <li>
+        Locked entries cannot be changed from the public page.
+      </li>
+
+      <li>
+        Names, dates and times can be configured by authorized administrators.
+      </li>
+
     </ul>
 
   </section>
 
 </main>
 
+
 <footer>
   © <span id="year"></span> MK Time
 </footer>
 
+
+<!-- app.js में import है, इसलिए module जरूरी है -->
 <script type="module" src="app.js"></script>
 
 </body>
-</html>
+  </html>
