@@ -4,9 +4,9 @@ service cloud.firestore {
 
   match /databases/{database}/documents {
 
-
     /*
      * EXISTING SITE DATA
+     * इसे बदला नहीं गया।
      */
 
     match /site/main {
@@ -19,57 +19,57 @@ service cloud.firestore {
 
 
     /*
-     * RESULT VIEW COUNTERS
+     * RESULT VIEW COUNTER
      */
 
     match /resultViews/{resultId} {
 
       /*
-       * Everyone can see latest count.
+       * Latest total views public पढ़ सकता है.
        */
 
       allow read: if true;
 
 
       /*
-       * Counter can only increase by 1.
+       * Counter पहली बार 1 से create हो सकता है.
        */
 
-      allow create, update:
-        if request.resource.data.count is int
-        &&
-        request.resource.data.count >= 0
-        &&
-        (
-          !resource.exists()
-          ||
-          request.resource.data.count ==
-          resource.data.count + 1
-        );
+      allow create:
+        if request.resource.data.count == 1;
 
 
       /*
-       * Counter cannot be deleted.
+       * Existing counter केवल +1 हो सकता है.
+       */
+
+      allow update:
+        if request.resource.data.count ==
+           resource.data.count + 1;
+
+
+      /*
+       * Counter delete नहीं होगा.
        */
 
       allow delete: if false;
 
 
       /*
-       * DAILY VIEW MARKERS
+       * DAILY VIEW MARKER
        */
 
       match /daily/{markerId} {
 
         /*
-         * Marker can be checked by public site.
+         * Marker check करने की permission.
          */
 
         allow read: if true;
 
 
         /*
-         * A marker can only be created.
+         * केवल नया marker create होगा.
          */
 
         allow create:
@@ -79,11 +79,14 @@ service cloud.firestore {
 
 
         /*
-         * Existing marker cannot be changed/deleted.
+         * Marker बदलना/delete करना allowed नहीं.
          */
 
         allow update, delete: if false;
       }
+
     }
+
   }
+
 }
