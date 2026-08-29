@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MK Time — Admin</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MK Time — Admin</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -14,12 +14,14 @@
     <h1>MK TIME</h1>
     <p>Admin Dashboard</p>
   </div>
+
   <a class="admin-link" href="index.html">Public Site</a>
 </header>
 
 <main>
 
-<!-- LOGIN -->
+<!-- ================= LOGIN ================= -->
+
 <section id="loginBox" class="section">
 
   <div class="section-title">
@@ -29,9 +31,16 @@
   <form id="loginForm" class="form">
 
     <input
+      id="email"
+      type="email"
+      placeholder="Admin email"
+      required
+    >
+
+    <input
       id="password"
       type="password"
-      placeholder="Admin password"
+      placeholder="Password"
       required
     >
 
@@ -44,19 +53,24 @@
 </section>
 
 
-<!-- DASHBOARD -->
+<!-- ================= DASHBOARD ================= -->
+
 <section id="dashboard" hidden>
 
   <section class="notes">
+
     <h2>Manage Announcements</h2>
+
     <p>
       Changes are stored in the shared Firebase database
-      and appear on the public site.
+      and appear on the public site for everyone.
     </p>
+
   </section>
 
 
-  <!-- ADD / EDIT -->
+  <!-- ================= ADD / EDIT BOX ================= -->
+
   <section class="section">
 
     <div class="section-title">
@@ -65,7 +79,10 @@
 
     <form id="boxForm" class="form">
 
-      <input type="hidden" id="editId">
+      <input
+        type="hidden"
+        id="editId"
+      >
 
       <input
         id="name"
@@ -86,11 +103,21 @@
       >
 
       <select id="section">
-        <option value="live">LIVE</option>
-        <option value="next">NEXT</option>
+
+        <option value="live">
+          LIVE
+        </option>
+
+        <option value="next">
+          NEXT
+        </option>
+
       </select>
 
-      <button type="submit" id="saveBtn">
+      <button
+        type="submit"
+        id="saveBtn"
+      >
         Add Box
       </button>
 
@@ -108,31 +135,40 @@
   </section>
 
 
-  <!-- LIVE BOXES -->
+  <!-- ================= LIVE BOXES ================= -->
+
   <section class="section">
 
     <div class="section-title">
       <span>LIVE BOXES</span>
     </div>
 
-    <div id="liveAdmin" class="cards"></div>
+    <div
+      id="liveAdmin"
+      class="cards"
+    ></div>
 
   </section>
 
 
-  <!-- NEXT BOXES -->
+  <!-- ================= NEXT BOXES ================= -->
+
   <section class="section">
 
     <div class="section-title">
       <span>NEXT BOXES</span>
     </div>
 
-    <div id="nextAdmin" class="cards"></div>
+    <div
+      id="nextAdmin"
+      class="cards"
+    ></div>
 
   </section>
 
 
-  <!-- CHANGE PASSWORD -->
+  <!-- ================= CHANGE PASSWORD ================= -->
+
   <section class="section">
 
     <div class="section-title">
@@ -144,8 +180,8 @@
       <input
         id="newPassword"
         type="password"
-        minlength="4"
-        placeholder="New password"
+        minlength="6"
+        placeholder="New password (6+ characters)"
         required
       >
 
@@ -160,7 +196,12 @@
   </section>
 
 
-  <button id="logout" class="secondary">
+  <!-- ================= LOGOUT ================= -->
+
+  <button
+    id="logout"
+    class="secondary"
+  >
     Logout
   </button>
 
@@ -169,35 +210,23 @@
 </main>
 
 
+<!-- ================= FIREBASE ================= -->
+
 <script type="module">
 
 import {
+  auth,
   siteRef,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  updatePassword,
   onSnapshot,
   setDoc
 } from "./firebase.js";
 
 
-/* =========================
-   ADMIN PASSWORD
-========================= */
-
-const PASSWORD_KEY = "mk_admin_password";
-
-const DEFAULT_PASSWORD = "2752";
-
-
-function getPassword() {
-
-  return localStorage.getItem(PASSWORD_KEY)
-    || DEFAULT_PASSWORD;
-
-}
-
-
-/* =========================
-   DATA
-========================= */
+/* ================= DATA ================= */
 
 let data = {
   live: [],
@@ -206,18 +235,17 @@ let data = {
 };
 
 
-/* =========================
-   HELPERS
-========================= */
+/* ================= SHORT FUNCTION ================= */
 
-const $ = id =>
-  document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
+
+/* ================= HTML ESCAPE ================= */
 
 function esc(value) {
 
   return String(value ?? "")
-    .replace(/[&<>"']/g, function(m) {
+    .replace(/[&<>"']/g, function (m) {
 
       return {
         "&": "&amp;",
@@ -232,9 +260,7 @@ function esc(value) {
 }
 
 
-/* =========================
-   TIME
-========================= */
+/* ================= 24 HOUR TIME ================= */
 
 function to24(time) {
 
@@ -244,103 +270,118 @@ function to24(time) {
 
   if (!m) return "";
 
-  let h = Number(m[1]);
+  let hour = Number(m[1]);
 
-  const ap = m[3].toUpperCase();
+  const minute = m[2];
 
-  if (ap === "PM" && h < 12)
-    h += 12;
+  const ampm = m[3].toUpperCase();
 
-  if (ap === "AM" && h === 12)
-    h = 0;
+
+  if (ampm === "PM" && hour < 12) {
+    hour += 12;
+  }
+
+  if (ampm === "AM" && hour === 12) {
+    hour = 0;
+  }
+
 
   return (
-    String(h).padStart(2, "0")
+    String(hour).padStart(2, "0")
     + ":"
-    + m[2]
+    + minute
   );
 
 }
 
+
+/* ================= 12 HOUR TIME ================= */
 
 function to12(time) {
 
   if (!time) return "";
 
-  let [h, m] =
-    time.split(":").map(Number);
+  const parts = time.split(":");
 
-  const ap = h >= 12 ? "PM" : "AM";
+  let hour = Number(parts[0]);
 
-  h = h % 12 || 12;
+  const minute = parts[1];
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12 || 12;
+
 
   return (
-    String(h).padStart(2, "0")
+    String(hour).padStart(2, "0")
     + ":"
-    + String(m).padStart(2, "0")
+    + minute
     + " "
-    + ap
+    + ampm
   );
 
 }
 
 
-/* =========================
-   RENDER
-========================= */
+/* ================= RENDER BOXES ================= */
 
 function render() {
 
-  ["live", "next"].forEach(section => {
+  ["live", "next"].forEach(function(section) {
 
-    const box =
-      $(section + "Admin");
+    const container = $(section + "Admin");
 
-    if (!box) return;
+    const boxes = data[section] || [];
 
 
-    box.innerHTML =
-      (data[section] || [])
-      .map(x => `
+    if (boxes.length === 0) {
 
+      container.innerHTML =
+        '<p class="empty">No boxes.</p>';
+
+      return;
+
+    }
+
+
+    container.innerHTML = boxes.map(function(box) {
+
+      return `
         <article class="card admin-card">
 
           <div>
 
             <small>
-              ${esc(x.time)}
+              ${esc(box.time)}
             </small>
 
             <h3>
-              ${esc(x.name)}
+              ${esc(box.name)}
             </h3>
 
             <p>
-              ${esc(x.value)}
-              ${x.locked ? " • LOCKED" : ""}
+              ${esc(box.value)}
+              ${box.locked ? " • LOCKED" : ""}
             </p>
 
           </div>
 
-
           <div class="actions">
 
             <button
-              onclick="editBox('${x.id}','${section}')"
+              onclick="editBox('${box.id}','${section}')"
             >
               Edit
             </button>
 
-
             <button
-              onclick="toggleLock('${x.id}','${section}')"
+              onclick="toggleLock('${box.id}','${section}')"
             >
-              ${x.locked ? "Unlock" : "Lock"}
+              ${box.locked ? "Unlock" : "Lock"}
             </button>
 
-
             <button
-              onclick="deleteBox('${x.id}','${section}')"
+              onclick="deleteBox('${box.id}','${section}')"
               class="danger"
             >
               Delete
@@ -349,72 +390,55 @@ function render() {
           </div>
 
         </article>
+      `;
 
-      `)
-      .join("");
-
-
-    if (!box.innerHTML) {
-
-      box.innerHTML =
-        '<p class="empty">No boxes.</p>';
-
-    }
+    }).join("");
 
   });
 
 }
 
 
-/* =========================
-   SAVE FIREBASE
-========================= */
+/* ================= SAVE FIREBASE ================= */
 
 async function saveData() {
 
-  await setDoc(
-    siteRef,
-    data
-  );
+  await setDoc(siteRef, data);
 
   render();
 
 }
 
 
-/* =========================
-   EDIT BOX
-========================= */
+/* ================= EDIT BOX ================= */
 
 window.editBox = function(id, section) {
 
-  const item =
-    (data[section] || [])
-    .find(x => x.id === id);
+  const boxes = data[section] || [];
 
-  if (!item) return;
+  const box = boxes.find(function(item) {
+
+    return item.id === id;
+
+  });
 
 
-  $("editId").value =
-    item.id;
+  if (!box) return;
 
-  $("name").value =
-    item.name;
 
-  $("time").value =
-    to24(item.time);
+  $("editId").value = box.id;
 
-  $("value").value =
-    item.value;
+  $("name").value = box.name;
 
-  $("section").value =
-    section;
+  $("time").value = to24(box.time);
 
-  $("saveBtn").textContent =
-    "Save Changes";
+  $("value").value = box.value;
 
-  $("cancelBtn").hidden =
-    false;
+  $("section").value = section;
+
+  $("saveBtn").textContent = "Save Changes";
+
+  $("cancelBtn").hidden = false;
 
 
   window.scrollTo({
@@ -425,22 +449,23 @@ window.editBox = function(id, section) {
 };
 
 
-/* =========================
-   LOCK / UNLOCK
-========================= */
+/* ================= LOCK / UNLOCK ================= */
 
-window.toggleLock =
-async function(id, section) {
+window.toggleLock = async function(id, section) {
 
-  const item =
-    (data[section] || [])
-    .find(x => x.id === id);
+  const boxes = data[section] || [];
 
-  if (!item) return;
+  const box = boxes.find(function(item) {
+
+    return item.id === id;
+
+  });
 
 
-  item.locked =
-    !item.locked;
+  if (!box) return;
+
+
+  box.locked = !box.locked;
 
 
   await saveData();
@@ -448,21 +473,24 @@ async function(id, section) {
 };
 
 
-/* =========================
-   DELETE BOX
-========================= */
+/* ================= DELETE BOX ================= */
 
-window.deleteBox =
-async function(id, section) {
+window.deleteBox = async function(id, section) {
 
-  if (
-    !confirm("Delete this box?")
-  ) return;
+  const ok = confirm(
+    "Delete this box?"
+  );
+
+
+  if (!ok) return;
 
 
   data[section] =
-    (data[section] || [])
-    .filter(x => x.id !== id);
+    (data[section] || []).filter(function(box) {
+
+      return box.id !== id;
+
+    });
 
 
   await saveData();
@@ -470,9 +498,7 @@ async function(id, section) {
 };
 
 
-/* =========================
-   RESET FORM
-========================= */
+/* ================= RESET FORM ================= */
 
 function resetForm() {
 
@@ -486,260 +512,282 @@ function resetForm() {
 
   $("section").value = "live";
 
-  $("saveBtn").textContent =
-    "Add Box";
+  $("saveBtn").textContent = "Add Box";
 
-  $("cancelBtn").hidden =
-    true;
+  $("cancelBtn").hidden = true;
 
 }
 
 
-/* =========================
-   ADD / EDIT SUBMIT
-========================= */
+/* ================= ADD / EDIT FORM ================= */
 
-$("boxForm").onsubmit =
-async function(e) {
+$("boxForm").onsubmit = async function(event) {
 
-  e.preventDefault();
+  event.preventDefault();
 
 
-  const id =
-    $("editId").value;
+  const editId = $("editId").value;
 
-  const section =
-    $("section").value;
+  const section = $("section").value;
 
 
-  const item = {
+  const box = {
 
-    name:
-      $("name").value.trim(),
+    name: $("name").value.trim(),
 
-    time:
-      to12($("time").value),
+    time: to12($("time").value),
 
-    value:
-      $("value").value.trim(),
+    value: $("value").value.trim(),
 
-    locked:
-      false
+    locked: false
 
   };
 
 
-  /* EDIT */
+  /* ===== EDIT EXISTING BOX ===== */
 
-  if (id) {
+  if (editId) {
 
-    for (
-      const sec of ["live", "next"]
-    ) {
+    let oldBox = null;
+
+
+    for (const sec of ["live", "next"]) {
 
       const index =
-        (data[sec] || [])
-        .findIndex(x => x.id === id);
+        (data[sec] || []).findIndex(function(item) {
+
+          return item.id === editId;
+
+        });
 
 
-      if (index > -1) {
+      if (index !== -1) {
 
-        item.id = id;
+        oldBox = data[sec][index];
 
-        item.locked =
-          data[sec][index].locked;
+        data[sec].splice(index, 1);
 
-        data[sec].splice(
-          index,
-          1
-        );
+        break;
 
       }
 
     }
 
+
+    box.id = editId;
+
+    box.locked = oldBox
+      ? !!oldBox.locked
+      : false;
+
   }
 
 
-  /* ADD */
+  /* ===== ADD NEW BOX ===== */
 
   else {
 
-    item.id =
-      crypto.randomUUID();
+    box.id = crypto.randomUUID();
 
   }
 
 
-  if (!data[section])
+  if (!Array.isArray(data[section])) {
+
     data[section] = [];
 
-
-  data[section].push(item);
-
-
-  await saveData();
+  }
 
 
-  resetForm();
-
-};
+  data[section].push(box);
 
 
-/* =========================
-   CANCEL EDIT
-========================= */
+  try {
 
-$("cancelBtn").onclick =
-function() {
+    await saveData();
 
-  resetForm();
-
-};
-
-
-/* =========================
-   LOGIN
-========================= */
-
-$("loginForm").onsubmit =
-function(e) {
-
-  e.preventDefault();
-
-
-  const entered =
-    $("password").value;
-
-
-  if (
-    entered === getPassword()
-  ) {
-
-    $("loginBox").hidden =
-      true;
-
-    $("dashboard").hidden =
-      false;
-
-    $("password").value = "";
-
-    $("loginMsg").textContent =
-      "";
-
-    render();
+    resetForm();
 
   }
 
-  else {
+  catch (error) {
 
-    $("loginMsg").textContent =
-      "Wrong password.";
+    console.error(error);
+
+    alert(
+      "Box save nahi hua. Firebase rules/check karo."
+    );
 
   }
 
 };
 
 
-/* =========================
-   LOGOUT
-========================= */
+/* ================= CANCEL EDIT ================= */
 
-$("logout").onclick =
-function() {
+$("cancelBtn").onclick = function() {
 
-  $("dashboard").hidden =
-    true;
-
-  $("loginBox").hidden =
-    false;
-
-  $("password").value = "";
+  resetForm();
 
 };
 
 
-/* =========================
-   CHANGE PASSWORD
-========================= */
+/* ================= LOGIN ================= */
 
-$("pwForm").onsubmit =
-function(e) {
+$("loginForm").onsubmit = async function(event) {
 
-  e.preventDefault();
+  event.preventDefault();
 
 
-  const newPassword =
-    $("newPassword").value;
+  $("loginMsg").textContent =
+    "Logging in...";
 
 
-  if (
-    newPassword.length < 4
-  ) {
+  try {
+
+    await signInWithEmailAndPassword(
+      auth,
+      $("email").value.trim(),
+      $("password").value
+    );
+
+
+    $("loginMsg").textContent = "";
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    $("loginMsg").textContent =
+      "Login failed: " + error.message;
+
+  }
+
+};
+
+
+/* ================= LOGOUT ================= */
+
+$("logout").onclick = async function() {
+
+  await signOut(auth);
+
+};
+
+
+/* ================= CHANGE PASSWORD ================= */
+
+$("pwForm").onsubmit = async function(event) {
+
+  event.preventDefault();
+
+
+  const user = auth.currentUser;
+
+
+  if (!user) {
 
     $("pwMsg").textContent =
-      "Password must be at least 4 characters.";
+      "Please login first.";
 
     return;
 
   }
 
 
-  localStorage.setItem(
-    PASSWORD_KEY,
-    newPassword
-  );
+  const newPassword =
+    $("newPassword").value;
 
 
-  $("pwMsg").textContent =
-    "Password changed successfully.";
+  try {
+
+    await updatePassword(
+      user,
+      newPassword
+    );
 
 
-  $("newPassword").value = "";
+    $("pwMsg").textContent =
+      "Password changed successfully.";
+
+    $("newPassword").value = "";
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    $("pwMsg").textContent =
+      "Password change failed. Log in again if required.";
+
+  }
 
 };
 
 
-/* =========================
-   FIREBASE REAL-TIME DATA
-========================= */
+/* ================= AUTH STATE ================= */
 
-onSnapshot(
+onAuthStateChanged(auth, function(user) {
 
-  siteRef,
+  $("loginBox").hidden = !!user;
 
-  function(snapshot) {
+  $("dashboard").hidden = !user;
 
-    if (snapshot.exists()) {
 
-      data = {
-        live: [],
-        next: [],
-        records: {},
-        ...snapshot.data()
-      };
+  if (user) {
 
-    }
+    onSnapshot(
+      siteRef,
+      function(snapshot) {
 
-    render();
+        if (snapshot.exists()) {
 
-  },
+          data = {
+            live: [],
+            next: [],
+            records: {},
+            ...snapshot.data()
+          };
 
-  function(error) {
+        }
 
-    console.error(
-      "Firebase error:",
-      error
+        else {
+
+          data = {
+            live: [],
+            next: [],
+            records: {}
+          };
+
+        }
+
+
+        render();
+
+      },
+      function(error) {
+
+        console.error(
+          "Firebase error:",
+          error
+        );
+
+      }
     );
 
   }
 
-);
+});
 
+
+/* ================= INITIAL RENDER ================= */
 
 render();
 
 </script>
 
 </body>
-  </html>
+        </html>
