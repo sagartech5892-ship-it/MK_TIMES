@@ -1,9 +1,89 @@
 rules_version = '2';
+
 service cloud.firestore {
+
   match /databases/{database}/documents {
+
+
+    /*
+     * EXISTING SITE DATA
+     */
+
     match /site/main {
+
       allow read: if true;
-      allow write: if request.auth != null;
+
+      allow write:
+        if request.auth != null;
+    }
+
+
+    /*
+     * RESULT VIEW COUNTERS
+     */
+
+    match /resultViews/{resultId} {
+
+      /*
+       * Everyone can see latest count.
+       */
+
+      allow read: if true;
+
+
+      /*
+       * Counter can only increase by 1.
+       */
+
+      allow create, update:
+        if request.resource.data.count is int
+        &&
+        request.resource.data.count >= 0
+        &&
+        (
+          !resource.exists()
+          ||
+          request.resource.data.count ==
+          resource.data.count + 1
+        );
+
+
+      /*
+       * Counter cannot be deleted.
+       */
+
+      allow delete: if false;
+
+
+      /*
+       * DAILY VIEW MARKERS
+       */
+
+      match /daily/{markerId} {
+
+        /*
+         * Marker can be checked by public site.
+         */
+
+        allow read: if true;
+
+
+        /*
+         * A marker can only be created.
+         */
+
+        allow create:
+          if request.resource.data.day is string
+          &&
+          request.resource.data.createdAt is string;
+
+
+        /*
+         * Existing marker cannot be changed/deleted.
+         */
+
+        allow update, delete: if false;
+      }
     }
   }
 }
