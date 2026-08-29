@@ -1,29 +1,745 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MK Time — Admin</title><link rel="stylesheet" href="style.css"></head>
-<body><header class="top"><div><h1>MK TIME</h1><p>Admin Dashboard</p></div><a class="admin-link" href="index.html">Public Site</a></header><main>
-<section id="loginBox" class="section"><div class="section-title"><span>ADMIN LOGIN</span></div><form id="loginForm" class="form"><input id="email" type="email" placeholder="Admin email" required><input id="password" type="password" placeholder="Password" required><button>Login</button><p id="loginMsg"></p></form></section>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MK Time — Admin</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="top">
+  <div>
+    <h1>MK TIME</h1>
+    <p>Admin Dashboard</p>
+  </div>
+  <a class="admin-link" href="index.html">Public Site</a>
+</header>
+
+<main>
+
+<!-- LOGIN -->
+<section id="loginBox" class="section">
+
+  <div class="section-title">
+    <span>ADMIN LOGIN</span>
+  </div>
+
+  <form id="loginForm" class="form">
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Admin password"
+      required
+    >
+
+    <button type="submit">Login</button>
+
+    <p id="loginMsg"></p>
+
+  </form>
+
+</section>
+
+
+<!-- DASHBOARD -->
 <section id="dashboard" hidden>
-<section class="notes"><h2>Manage Announcements</h2><p>Changes are stored in the shared Firebase database and appear on the public site for everyone.</p></section>
-<section class="section"><div class="section-title"><span>ADD / EDIT BOX</span></div><form id="boxForm" class="form"><input type="hidden" id="editId"><input id="name" placeholder="Name / announcement" required><input id="time" type="time" required><input id="value" placeholder="Result / status text" required><select id="section"><option value="live">LIVE</option><option value="next">NEXT</option></select><button type="submit" id="saveBtn">Add Box</button><button type="button" id="cancelBtn" class="secondary" hidden>Cancel Edit</button></form></section>
-<section class="section"><div class="section-title"><span>LIVE BOXES</span></div><div id="liveAdmin" class="cards"></div></section>
-<section class="section"><div class="section-title"><span>NEXT BOXES</span></div><div id="nextAdmin" class="cards"></div></section>
-<section class="section"><div class="section-title"><span>CHANGE PASSWORD</span></div><form id="pwForm" class="form"><input id="newPassword" type="password" minlength="6" placeholder="New password (6+ characters)" required><button>Change Password</button><p id="pwMsg"></p></form></section>
-<button id="logout" class="secondary">Logout</button></section></main>
+
+  <section class="notes">
+    <h2>Manage Announcements</h2>
+    <p>
+      Changes are stored in the shared Firebase database
+      and appear on the public site.
+    </p>
+  </section>
+
+
+  <!-- ADD / EDIT -->
+  <section class="section">
+
+    <div class="section-title">
+      <span>ADD / EDIT BOX</span>
+    </div>
+
+    <form id="boxForm" class="form">
+
+      <input type="hidden" id="editId">
+
+      <input
+        id="name"
+        placeholder="Name / announcement"
+        required
+      >
+
+      <input
+        id="time"
+        type="time"
+        required
+      >
+
+      <input
+        id="value"
+        placeholder="Result / status text"
+        required
+      >
+
+      <select id="section">
+        <option value="live">LIVE</option>
+        <option value="next">NEXT</option>
+      </select>
+
+      <button type="submit" id="saveBtn">
+        Add Box
+      </button>
+
+      <button
+        type="button"
+        id="cancelBtn"
+        class="secondary"
+        hidden
+      >
+        Cancel Edit
+      </button>
+
+    </form>
+
+  </section>
+
+
+  <!-- LIVE BOXES -->
+  <section class="section">
+
+    <div class="section-title">
+      <span>LIVE BOXES</span>
+    </div>
+
+    <div id="liveAdmin" class="cards"></div>
+
+  </section>
+
+
+  <!-- NEXT BOXES -->
+  <section class="section">
+
+    <div class="section-title">
+      <span>NEXT BOXES</span>
+    </div>
+
+    <div id="nextAdmin" class="cards"></div>
+
+  </section>
+
+
+  <!-- CHANGE PASSWORD -->
+  <section class="section">
+
+    <div class="section-title">
+      <span>CHANGE PASSWORD</span>
+    </div>
+
+    <form id="pwForm" class="form">
+
+      <input
+        id="newPassword"
+        type="password"
+        minlength="4"
+        placeholder="New password"
+        required
+      >
+
+      <button type="submit">
+        Change Password
+      </button>
+
+      <p id="pwMsg"></p>
+
+    </form>
+
+  </section>
+
+
+  <button id="logout" class="secondary">
+    Logout
+  </button>
+
+</section>
+
+</main>
+
+
 <script type="module">
-import {auth,siteRef,onAuthStateChanged,signInWithEmailAndPassword,signOut,updatePassword,onSnapshot,setDoc} from './firebase.js';
-let data={live:[],next:[],records:{}};
-const $=id=>document.getElementById(id); const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-function render(){['live','next'].forEach(s=>{ $(s+'Admin').innerHTML=(data[s]||[]).map(x=>`<article class="card admin-card"><div><small>${esc(x.time)}</small><h3>${esc(x.name)}</h3><p>${esc(x.value)}${x.locked?' • LOCKED':''}</p></div><div class="actions"><button onclick="editBox('${x.id}','${s}')">Edit</button><button onclick="toggleLock('${x.id}','${s}')">${x.locked?'Unlock':'Lock'}</button><button onclick="deleteBox('${x.id}','${s}')" class="danger">Delete</button></div></article>`).join('')||'<p class="empty">No boxes.</p>';});}
-function to24(t){const m=String(t).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);if(!m)return '';let h=+m[1],ap=m[3].toUpperCase();if(ap==='PM'&&h<12)h+=12;if(ap==='AM'&&h===12)h=0;return String(h).padStart(2,'0')+':'+m[2];}
-function to12(t){let [h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';h=h%12||12;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} ${ap}`;}
-async function save(){await setDoc(siteRef,data);render();}
-window.editBox=(id,s)=>{const x=(data[s]||[]).find(a=>a.id===id);if(!x)return;$('editId').value=id;$('name').value=x.name;$('time').value=to24(x.time);$('value').value=x.value;$('section').value=s;$('saveBtn').textContent='Save Changes';$('cancelBtn').hidden=false;scrollTo({top:0,behavior:'smooth'});};
-window.toggleLock=async(id,s)=>{const x=(data[s]||[]).find(a=>a.id===id);if(x){x.locked=!x.locked;await save();}};
-window.deleteBox=async(id,s)=>{if(!confirm('Delete this box?'))return;data[s]=(data[s]||[]).filter(a=>a.id!==id);await save();};
-function reset(){ $('editId').value='';$('name').value='';$('time').value='';$('value').value='';$('section').value='live';$('saveBtn').textContent='Add Box';$('cancelBtn').hidden=true; }
-$('boxForm').onsubmit=async e=>{e.preventDefault();const id=$('editId').value,s=$('section').value,obj={name:$('name').value.trim(),time:to12($('time').value),value:$('value').value.trim(),locked:false};if(id){for(const sec of ['live','next']){const i=(data[sec]||[]).findIndex(a=>a.id===id);if(i>-1){obj.id=id;obj.locked=data[sec][i].locked;data[sec].splice(i,1);}}}else obj.id=crypto.randomUUID();(data[s]??=[]).push(obj);await save();reset();};
-$('cancelBtn').onclick=reset;
-$('loginForm').onsubmit=async e=>{e.preventDefault();$('loginMsg').textContent='Logging in...';try{await signInWithEmailAndPassword(auth,$('email').value,$('password').value);$('loginMsg').textContent='';}catch(err){$('loginMsg').textContent='Login failed: '+err.message;}};
-$('logout').onclick=()=>signOut(auth);
-$('pwForm').onsubmit=async e=>{e.preventDefault();const u=auth.currentUser;if(!u)return;try{await updatePassword(u,$('newPassword').value);$('pwMsg').textContent='Password changed successfully.';$('newPassword').value='';}catch(err){$('pwMsg').textContent='Password change failed. Log in again if required.';}};
-onAuthStateChanged(auth,u=>{ $('loginBox').hidden=!!u;$('dashboard').hidden=!u;if(u){onSnapshot(siteRef,s=>{if(s.exists())data={live:[],next:[],records:{},...s.data()};render();});}});
-</script></body></html>
+
+import {
+  siteRef,
+  onSnapshot,
+  setDoc
+} from "./firebase.js";
+
+
+/* =========================
+   ADMIN PASSWORD
+========================= */
+
+const PASSWORD_KEY = "mk_admin_password";
+
+const DEFAULT_PASSWORD = "2752";
+
+
+function getPassword() {
+
+  return localStorage.getItem(PASSWORD_KEY)
+    || DEFAULT_PASSWORD;
+
+}
+
+
+/* =========================
+   DATA
+========================= */
+
+let data = {
+  live: [],
+  next: [],
+  records: {}
+};
+
+
+/* =========================
+   HELPERS
+========================= */
+
+const $ = id =>
+  document.getElementById(id);
+
+
+function esc(value) {
+
+  return String(value ?? "")
+    .replace(/[&<>"']/g, function(m) {
+
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m];
+
+    });
+
+}
+
+
+/* =========================
+   TIME
+========================= */
+
+function to24(time) {
+
+  const m = String(time).match(
+    /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+  );
+
+  if (!m) return "";
+
+  let h = Number(m[1]);
+
+  const ap = m[3].toUpperCase();
+
+  if (ap === "PM" && h < 12)
+    h += 12;
+
+  if (ap === "AM" && h === 12)
+    h = 0;
+
+  return (
+    String(h).padStart(2, "0")
+    + ":"
+    + m[2]
+  );
+
+}
+
+
+function to12(time) {
+
+  if (!time) return "";
+
+  let [h, m] =
+    time.split(":").map(Number);
+
+  const ap = h >= 12 ? "PM" : "AM";
+
+  h = h % 12 || 12;
+
+  return (
+    String(h).padStart(2, "0")
+    + ":"
+    + String(m).padStart(2, "0")
+    + " "
+    + ap
+  );
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
+
+function render() {
+
+  ["live", "next"].forEach(section => {
+
+    const box =
+      $(section + "Admin");
+
+    if (!box) return;
+
+
+    box.innerHTML =
+      (data[section] || [])
+      .map(x => `
+
+        <article class="card admin-card">
+
+          <div>
+
+            <small>
+              ${esc(x.time)}
+            </small>
+
+            <h3>
+              ${esc(x.name)}
+            </h3>
+
+            <p>
+              ${esc(x.value)}
+              ${x.locked ? " • LOCKED" : ""}
+            </p>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              onclick="editBox('${x.id}','${section}')"
+            >
+              Edit
+            </button>
+
+
+            <button
+              onclick="toggleLock('${x.id}','${section}')"
+            >
+              ${x.locked ? "Unlock" : "Lock"}
+            </button>
+
+
+            <button
+              onclick="deleteBox('${x.id}','${section}')"
+              class="danger"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </article>
+
+      `)
+      .join("");
+
+
+    if (!box.innerHTML) {
+
+      box.innerHTML =
+        '<p class="empty">No boxes.</p>';
+
+    }
+
+  });
+
+}
+
+
+/* =========================
+   SAVE FIREBASE
+========================= */
+
+async function saveData() {
+
+  await setDoc(
+    siteRef,
+    data
+  );
+
+  render();
+
+}
+
+
+/* =========================
+   EDIT BOX
+========================= */
+
+window.editBox = function(id, section) {
+
+  const item =
+    (data[section] || [])
+    .find(x => x.id === id);
+
+  if (!item) return;
+
+
+  $("editId").value =
+    item.id;
+
+  $("name").value =
+    item.name;
+
+  $("time").value =
+    to24(item.time);
+
+  $("value").value =
+    item.value;
+
+  $("section").value =
+    section;
+
+  $("saveBtn").textContent =
+    "Save Changes";
+
+  $("cancelBtn").hidden =
+    false;
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+};
+
+
+/* =========================
+   LOCK / UNLOCK
+========================= */
+
+window.toggleLock =
+async function(id, section) {
+
+  const item =
+    (data[section] || [])
+    .find(x => x.id === id);
+
+  if (!item) return;
+
+
+  item.locked =
+    !item.locked;
+
+
+  await saveData();
+
+};
+
+
+/* =========================
+   DELETE BOX
+========================= */
+
+window.deleteBox =
+async function(id, section) {
+
+  if (
+    !confirm("Delete this box?")
+  ) return;
+
+
+  data[section] =
+    (data[section] || [])
+    .filter(x => x.id !== id);
+
+
+  await saveData();
+
+};
+
+
+/* =========================
+   RESET FORM
+========================= */
+
+function resetForm() {
+
+  $("editId").value = "";
+
+  $("name").value = "";
+
+  $("time").value = "";
+
+  $("value").value = "";
+
+  $("section").value = "live";
+
+  $("saveBtn").textContent =
+    "Add Box";
+
+  $("cancelBtn").hidden =
+    true;
+
+}
+
+
+/* =========================
+   ADD / EDIT SUBMIT
+========================= */
+
+$("boxForm").onsubmit =
+async function(e) {
+
+  e.preventDefault();
+
+
+  const id =
+    $("editId").value;
+
+  const section =
+    $("section").value;
+
+
+  const item = {
+
+    name:
+      $("name").value.trim(),
+
+    time:
+      to12($("time").value),
+
+    value:
+      $("value").value.trim(),
+
+    locked:
+      false
+
+  };
+
+
+  /* EDIT */
+
+  if (id) {
+
+    for (
+      const sec of ["live", "next"]
+    ) {
+
+      const index =
+        (data[sec] || [])
+        .findIndex(x => x.id === id);
+
+
+      if (index > -1) {
+
+        item.id = id;
+
+        item.locked =
+          data[sec][index].locked;
+
+        data[sec].splice(
+          index,
+          1
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /* ADD */
+
+  else {
+
+    item.id =
+      crypto.randomUUID();
+
+  }
+
+
+  if (!data[section])
+    data[section] = [];
+
+
+  data[section].push(item);
+
+
+  await saveData();
+
+
+  resetForm();
+
+};
+
+
+/* =========================
+   CANCEL EDIT
+========================= */
+
+$("cancelBtn").onclick =
+function() {
+
+  resetForm();
+
+};
+
+
+/* =========================
+   LOGIN
+========================= */
+
+$("loginForm").onsubmit =
+function(e) {
+
+  e.preventDefault();
+
+
+  const entered =
+    $("password").value;
+
+
+  if (
+    entered === getPassword()
+  ) {
+
+    $("loginBox").hidden =
+      true;
+
+    $("dashboard").hidden =
+      false;
+
+    $("password").value = "";
+
+    $("loginMsg").textContent =
+      "";
+
+    render();
+
+  }
+
+  else {
+
+    $("loginMsg").textContent =
+      "Wrong password.";
+
+  }
+
+};
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+$("logout").onclick =
+function() {
+
+  $("dashboard").hidden =
+    true;
+
+  $("loginBox").hidden =
+    false;
+
+  $("password").value = "";
+
+};
+
+
+/* =========================
+   CHANGE PASSWORD
+========================= */
+
+$("pwForm").onsubmit =
+function(e) {
+
+  e.preventDefault();
+
+
+  const newPassword =
+    $("newPassword").value;
+
+
+  if (
+    newPassword.length < 4
+  ) {
+
+    $("pwMsg").textContent =
+      "Password must be at least 4 characters.";
+
+    return;
+
+  }
+
+
+  localStorage.setItem(
+    PASSWORD_KEY,
+    newPassword
+  );
+
+
+  $("pwMsg").textContent =
+    "Password changed successfully.";
+
+
+  $("newPassword").value = "";
+
+};
+
+
+/* =========================
+   FIREBASE REAL-TIME DATA
+========================= */
+
+onSnapshot(
+
+  siteRef,
+
+  function(snapshot) {
+
+    if (snapshot.exists()) {
+
+      data = {
+        live: [],
+        next: [],
+        records: {},
+        ...snapshot.data()
+      };
+
+    }
+
+    render();
+
+  },
+
+  function(error) {
+
+    console.error(
+      "Firebase error:",
+      error
+    );
+
+  }
+
+);
+
+
+render();
+
+</script>
+
+</body>
+  </html>
