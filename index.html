@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MK Time — Results & Schedule</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>MK TIME</h1>
+    <p>Daily Results</p>
+  </div>
+  <a class="admin-link" href="admin.html">Admin</a>
+</header>
+
+<main>
+  <section class="hero">
+    <h2>Today's Results</h2>
+    <p id="today"></p>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-title"><span>LIVE</span></div>
+      <button id="refreshBtn" class="refresh-btn" type="button" onclick="refreshResults()">↻ Refresh</button>
+    </div>
+    <div id="live" class="cards"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-title"><span>NEXT</span></div>
+    <div id="next" class="cards"></div>
+  </section>
+<section class="section">
+    <div class="section-title"><span>PREVIOUS RECORDS</span></div>
+    <div class="record-tools">
+      <select id="month"></select>
+      <button onclick="showRecords()">View Record</button>
+    </div>
+    <div id="records" class="records"></div>
+  </section>
+
+  <section class="notes">
+    <h2>📌 Important Information</h2>
+    <ul>
+      <li>Published information is displayed for public viewing.</li>
+      <li>Locked entries cannot be changed from the public page.</li>
+      <li>Names, dates and times can be configured by authorized administrators.</li>
+    </ul>
+  </section>
+</main>
+
+<footer>© <span id="year"></span> MK Time</footer>
+<script src="app.js"></script>
+</body>
+</html>
