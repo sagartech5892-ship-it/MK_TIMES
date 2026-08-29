@@ -6,7 +6,9 @@ import {
   runTransaction
 } from "./firebase.js";
 
+
 const fallback = {
+
   live: [
     {
       id: "1",
@@ -35,251 +37,560 @@ const fallback = {
   ],
 
   records: {}
+
 };
 
+
 let data = fallback;
+
+let viewUnsubscribers = [];
+
+let refreshInProgress = false;
+
 
 
 /* =========================
    HTML ESCAPE
 ========================= */
 
-function escapeHtml(v) {
+function escapeHtml(v){
+
   return String(v ?? "").replace(
     /[&<>"']/g,
+
     m => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
     }[m])
+
   );
+
 }
+
 
 
 /* =========================
    VIEWER ID
 ========================= */
 
-function getViewerId() {
+function getViewerId(){
 
-  const key = "mk_time_viewer_id_v1";
+  const key =
+    "mk_time_viewer_id_v1";
 
-  let id = localStorage.getItem(key);
+  let id =
+    localStorage.getItem(key);
 
-  if (!id) {
+
+  if(!id){
 
     id =
       (
         typeof crypto !== "undefined" &&
-        crypto.randomUUID
+        typeof crypto.randomUUID === "function"
       )
-        ? crypto.randomUUID()
-        : Date.now().toString(36) +
-          "-" +
-          Math.random().toString(36).slice(2);
 
-    localStorage.setItem(key, id);
+      ? crypto.randomUUID()
+
+      : Date.now().toString(36) +
+        "-" +
+        Math.random()
+          .toString(36)
+          .slice(2);
+
+
+    localStorage.setItem(
+      key,
+      id
+    );
+
   }
 
+
   return id;
+
 }
+
 
 
 /* =========================
    TODAY KEY
 ========================= */
 
-function todayKey() {
+function todayKey(){
 
   const d = new Date();
 
+
   return (
+
     d.getFullYear() +
+
     "-" +
-    String(d.getMonth() + 1).padStart(2, "0") +
+
+    String(
+      d.getMonth() + 1
+    ).padStart(2,"0") +
+
     "-" +
-    String(d.getDate()).padStart(2, "0")
+
+    String(
+      d.getDate()
+    ).padStart(2,"0")
+
   );
+
 }
+
 
 
 /* =========================
    SAFE FIRESTORE ID
 ========================= */
 
-function safeId(value) {
+function safeId(value){
 
-  return String(value ?? "")
-    .replace(/[^A-Za-z0-9_-]/g, "_")
-    .slice(0, 120) || "unknown";
+  return String(
+    value ?? ""
+  )
+
+    .replace(
+      /[^A-Za-z0-9_-]/g,
+      "_"
+    )
+
+    .slice(0,120)
+
+    || "unknown";
+
 }
+
 
 
 /* =========================
-   SIMPLE HASH
+   HASH
 ========================= */
 
-function hashString(value) {
+function hashString(value){
 
   let h = 2166136261;
 
-  for (let i = 0; i < value.length; i++) {
+
+  for(
+    let i = 0;
+    i < value.length;
+    i++
+  ){
 
     h ^= value.charCodeAt(i);
 
-    h = Math.imul(h, 16777619);
+    h = Math.imul(
+      h,
+      16777619
+    );
+
   }
 
-  return (h >>> 0)
+
+  return (
+    h >>> 0
+  )
     .toString(16)
-    .padStart(8, "0");
+    .padStart(8,"0");
+
 }
+
 
 
 /* =========================
    RESULT ID
 ========================= */
 
-function getResultId(result) {
+function getResultId(result){
 
-  return String(result?.id ?? "");
+  return String(
+    result?.id ?? ""
+  );
+
 }
+
 
 
 /* =========================
-   VIEW COUNTER
+   COUNT VIEW
 ========================= */
 
-async function countView(result) {
+async function countView(result){
 
-  const resultId = getResultId(result);
-
-  if (!resultId) return;
-
-  const viewerId = getViewerId();
-
-  const day = todayKey();
-
-  const markerId = hashString(
-    viewerId +
-    "|" +
-    resultId +
-    "|" +
-    day
-  );
+  const resultId =
+    getResultId(result);
 
 
-  const counterRef = doc(
-    db,
-    "resultViews",
-    safeId(resultId)
-  );
+  if(!resultId) return;
 
 
-  const markerRef = doc(
-    db,
-    "resultViews",
-    safeId(resultId),
-    "daily",
-    markerId
-  );
+  let viewerId;
 
 
-  try {
+  try{
 
-    await runTransaction(db, async transaction => {
+    viewerId =
+      getViewerId();
 
-      const markerSnap =
-        await transaction.get(markerRef);
+  }
+
+  catch(err){
+
+    console.error(
+      "Viewer ID error:",
+      err
+    );
+
+    return;
+
+  }
 
 
-      /*
-       * Already counted today.
-       */
+  const day =
+    todayKey();
 
-      if (markerSnap.exists()) {
 
-        return;
+  const markerId =
+    hashString(
+      viewerId +
+      "|" +
+      resultId +
+      "|" +
+      day
+    );
+
+
+  const counterRef =
+    doc(
+      db,
+      "resultViews",
+      safeId(resultId)
+    );
+
+
+  const markerRef =
+    doc(
+      db,
+      "resultViews",
+      safeId(resultId),
+      "daily",
+      markerId
+    );
+
+
+  try{
+
+    await runTransaction(
+      db,
+      async transaction => {
+
+        const markerSnap =
+          await transaction.get(
+            markerRef
+          );
+
+
+        /*
+         * Already counted today.
+         */
+
+        if(
+          markerSnap.exists()
+        ){
+
+          return;
+
+        }
+
+
+        const counterSnap =
+          await transaction.get(
+            counterRef
+          );
+
+
+        const oldCount =
+          counterSnap.exists()
+
+            ? Number(
+                counterSnap
+                  .data()
+                  .count || 0
+              )
+
+            : 0;
+
+
+        /*
+         * Increase counter.
+         */
+
+        transaction.set(
+          counterRef,
+
+          {
+            count:
+              oldCount + 1
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        /*
+         * Daily marker.
+         */
+
+        transaction.set(
+          markerRef,
+
+          {
+            day: day,
+
+            createdAt:
+              new Date()
+                .toISOString()
+          }
+
+        );
+
       }
+    );
 
+  }
 
-      const counterSnap =
-        await transaction.get(counterRef);
-
-
-      const oldCount =
-        counterSnap.exists()
-          ? Number(
-              counterSnap.data().count || 0
-            )
-          : 0;
-
-
-      /*
-       * Atomic transaction update.
-       */
-
-      transaction.set(
-        counterRef,
-        {
-          count: oldCount + 1
-        },
-        {
-          merge: true
-        }
-      );
-
-
-      /*
-       * Daily view marker.
-       */
-
-      transaction.set(
-        markerRef,
-        {
-          day: day,
-          createdAt: new Date().toISOString()
-        }
-      );
-
-    });
-
-  } catch (error) {
+  catch(err){
 
     console.error(
       "View counter error:",
-      error
+      err
     );
+
   }
+
 }
+
+
+
+/* =========================
+   TOTAL VIEWS DISPLAY
+========================= */
+
+function updateTotalViews(total){
+
+  const el =
+    document.getElementById(
+      "totalViews"
+    );
+
+
+  if(!el) return;
+
+
+  el.textContent =
+    "👁️ " +
+    Number(total || 0) +
+    " Views";
+
+}
+
+
+
+/* =========================
+   FIRESTORE VIEW LISTENERS
+========================= */
+
+function listenToViewCounts(items){
+
+  /*
+   * Remove old listeners.
+   */
+
+  viewUnsubscribers
+    .forEach(
+      unsubscribe => {
+
+        try{
+
+          unsubscribe();
+
+        }
+
+        catch(_){}
+
+      }
+    );
+
+
+  viewUnsubscribers = [];
+
+
+  const results =
+    (items || [])
+      .filter(
+        item =>
+          getResultId(item)
+      );
+
+
+  if(!results.length){
+
+    updateTotalViews(0);
+
+    return;
+
+  }
+
+
+  const counts =
+    new Map();
+
+
+  results.forEach(result => {
+
+    const resultId =
+      getResultId(result);
+
+
+    const ref =
+      doc(
+        db,
+        "resultViews",
+        safeId(resultId)
+      );
+
+
+    const unsubscribe =
+      onSnapshot(
+
+        ref,
+
+        snap => {
+
+          counts.set(
+
+            resultId,
+
+            snap.exists()
+
+              ? Number(
+                  snap
+                    .data()
+                    .count || 0
+                )
+
+              : 0
+
+          );
+
+
+          const total =
+            [...counts.values()]
+              .reduce(
+                (sum,value) =>
+                  sum + value,
+                0
+              );
+
+
+          updateTotalViews(
+            total
+          );
+
+        },
+
+
+        err => {
+
+          console.error(
+            "View count read error:",
+            err
+          );
+
+
+          if(
+            !counts.has(
+              resultId
+            )
+          ){
+
+            counts.set(
+              resultId,
+              0
+            );
+
+          }
+
+
+          const total =
+            [...counts.values()]
+              .reduce(
+                (sum,value) =>
+                  sum + value,
+                0
+              );
+
+
+          updateTotalViews(
+            total
+          );
+
+        }
+
+      );
+
+
+    viewUnsubscribers.push(
+      unsubscribe
+    );
+
+  });
+
+}
+
 
 
 /* =========================
    RESULT CARDS
 ========================= */
 
-function cards(id, items) {
+function cards(id,items){
 
   const el =
-    document.getElementById(id);
+    document.getElementById(
+      id
+    );
 
-  if (!el) return;
 
+  if(!el) return;
+
+
+  /*
+   * IMPORTANT:
+   * Views are NOT displayed
+   * inside result cards.
+   */
 
   el.innerHTML =
     (items || [])
-      .map(x => {
+      .map(
+        x => `
 
-        const views =
-          Number(x.views || 0);
-
-
-        return `
           <article class="card">
 
             <div>
+
               <small>
                 ${escapeHtml(x.time)}
               </small>
@@ -287,50 +598,33 @@ function cards(id, items) {
               <h3>
                 ${escapeHtml(x.name)}
               </h3>
-            </div>
-
-
-            <div>
-
-              <strong>
-                ${escapeHtml(x.value)}
-              </strong>
-
-
-              <div
-                class="views"
-                aria-label="${views} views"
-              >
-                👁️ ${views} Views
-              </div>
 
             </div>
+
+
+            <strong>
+              ${escapeHtml(x.value)}
+            </strong>
 
           </article>
-        `;
 
-      })
-      .join("") ||
+        `
+      )
+      .join("")
+
+    ||
+
     '<p class="empty">No announcements yet.</p>';
 
-
-  /*
-   * Count displayed results.
-   */
-
-  (items || []).forEach(x => {
-
-    countView(x);
-
-  });
 }
+
 
 
 /* =========================
    RENDER
 ========================= */
 
-function render() {
+function render(){
 
   cards(
     "live",
@@ -344,11 +638,44 @@ function render() {
   );
 
 
+  /*
+   * One total counter at the
+   * top of Today's Results.
+   */
+
+  const displayedResults = [
+
+    ...(data.live || []),
+
+    ...(data.next || [])
+
+  ];
+
+
+  listenToViewCounts(
+    displayedResults
+  );
+
+
+  /*
+   * Count displayed results.
+   * One view per result/device/day.
+   */
+
+  displayedResults
+    .forEach(
+      result =>
+        countView(result)
+    );
+
+
   const month =
-    document.getElementById("month");
+    document.getElementById(
+      "month"
+    );
 
 
-  if (month) {
+  if(month){
 
     const current =
       month.value;
@@ -360,8 +687,10 @@ function render() {
     Object.keys(
       data.records || {}
     )
+
       .sort()
       .reverse()
+
       .forEach(k => {
 
         const option =
@@ -369,9 +698,14 @@ function render() {
             "option"
           );
 
-        option.value = k;
 
-        option.textContent = k;
+        option.value =
+          k;
+
+
+        option.textContent =
+          k;
+
 
         month.appendChild(
           option
@@ -380,25 +714,31 @@ function render() {
       });
 
 
-    if (
+    if(
       [...month.options]
         .some(
           option =>
-            option.value === current
+            option.value ===
+            current
         )
-    ) {
+    ){
 
-      month.value = current;
+      month.value =
+        current;
+
     }
 
 
     showRecords();
+
   }
+
 }
 
 
+
 /* =========================
-   TODAY
+   TODAY DATE
 ========================= */
 
 const today =
@@ -407,19 +747,22 @@ const today =
   );
 
 
-if (today) {
+if(today){
 
   today.textContent =
-    new Date().toLocaleDateString(
-      undefined,
-      {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-      }
-    );
+    new Date()
+      .toLocaleDateString(
+        undefined,
+        {
+          weekday:"long",
+          year:"numeric",
+          month:"long",
+          day:"numeric"
+        }
+      );
+
 }
+
 
 
 /* =========================
@@ -432,26 +775,34 @@ const year =
   );
 
 
-if (year) {
+if(year){
 
   year.textContent =
-    new Date().getFullYear();
+    new Date()
+      .getFullYear();
+
 }
+
 
 
 /* =========================
    REFRESH
 ========================= */
 
-let refreshing = false;
-
-
 window.refreshResults =
-  function () {
+  function(){
 
-    if (refreshing) return;
+    if(
+      refreshInProgress
+    ){
 
-    refreshing = true;
+      return;
+
+    }
+
+
+    refreshInProgress =
+      true;
 
 
     const btn =
@@ -460,20 +811,26 @@ window.refreshResults =
       );
 
 
-    if (btn) {
+    if(btn){
 
-      btn.disabled = true;
+      btn.disabled =
+        true;
+
 
       btn.textContent =
         "↻ Refreshing...";
+
     }
 
 
     setTimeout(
-      () => location.reload(),
+      () =>
+        location.reload(),
       150
     );
+
   };
+
 
 
 /* =========================
@@ -481,7 +838,7 @@ window.refreshResults =
 ========================= */
 
 window.showRecords =
-  function () {
+  function(){
 
     const month =
       document.getElementById(
@@ -495,7 +852,14 @@ window.showRecords =
       );
 
 
-    if (!month || !el) return;
+    if(
+      !month ||
+      !el
+    ){
+
+      return;
+
+    }
 
 
     const rows =
@@ -505,15 +869,29 @@ window.showRecords =
 
 
     el.innerHTML = `
+
       <table>
 
         <thead>
+
           <tr>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Value</th>
+
+            <th>
+              Date
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Value
+            </th>
+
           </tr>
+
         </thead>
+
 
         <tbody>
 
@@ -521,7 +899,9 @@ window.showRecords =
             rows
               .map(
                 r => `
+
                   <tr>
+
                     <td>
                       ${escapeHtml(r[0])}
                     </td>
@@ -533,7 +913,9 @@ window.showRecords =
                     <td>
                       ${escapeHtml(r[2])}
                     </td>
+
                   </tr>
+
                 `
               )
               .join("")
@@ -542,41 +924,54 @@ window.showRecords =
         </tbody>
 
       </table>
+
     `;
+
   };
 
 
+
 /* =========================
-   FIRESTORE REAL-TIME DATA
+   FIRESTORE RESULT DATA
 ========================= */
 
 onSnapshot(
+
   siteRef,
 
   snap => {
 
-    if (snap.exists()) {
+    if(
+      snap.exists()
+    ){
 
       data = {
+
         ...fallback,
+
         ...snap.data()
+
       };
 
     }
+
 
     render();
 
   },
 
-  error => {
+
+  err => {
 
     console.error(
-      error
+      err
     );
+
 
     render();
 
   }
+
 );
 
 
