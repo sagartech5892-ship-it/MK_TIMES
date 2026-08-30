@@ -449,147 +449,113 @@ $("resultForm").addEventListener(
 
     event.preventDefault();
 
+const name =
+  $("name").value.trim();
 
-    const name =
-      $("name").value.trim();
+const time =
+  $("time").value;
 
-    const time =
-      $("time").value;
+const value =
+  $("value").value.trim();
 
-    const value =
-      $("value").value.trim();
+const section =
+  $("section").value;
 
-    const section =
-      $("section").value;
+if(!name || !time || !value){
 
+  $("resultMsg").textContent =
+    "Sabhi fields bharo.";
 
-    if(!name || !time || !value){
+  $("resultMsg").className =
+    "staff-message error";
 
-      $("resultMsg").textContent =
-        "Sabhi fields bharo.";
+  return;
+}
 
-      $("resultMsg").className =
-        "staff-message error";
+$("resultMsg").textContent =
+  "Result save ho raha hai...";
 
-      return;
+$("resultMsg").className =
+  "staff-message";
 
-    }
+try{
 
+  const snapshot =
+    await getDoc(siteRef);
 
-    $("resultMsg").textContent =
-      "Result save ho raha hai...";
+  let data =
+    snapshot.exists()
+      ? snapshot.data()
+      : {
+          live: [],
+          next: [],
+          records: {}
+        };
 
-    $("resultMsg").className =
-      "staff-message";
-
-
-    try{
-
-      /*
-        Pehle current Firebase data read karenge.
-      */
-
-      const snapshot =
-        await getDoc(siteRef);
-
-
-      let data =
-        snapshot.exists()
-          ? snapshot.data()
-          : {
-              live: [],
-              next: [],
-              records: {}
-            };
-
-
-      if(!Array.isArray(data.live)){
-        data.live = [];
-      }
-
-      if(!Array.isArray(data.next)){
-        data.next = [];
-      }
-
-      if(!data.records){
-        data.records = {};
-      }
-
-
-      /* ================= NEW RESULT ================= */
-
-      const newResult = {
-
-        id:
-          crypto.randomUUID(),
-
-        name:
-          name,
-
-        time:
-          to12(time),
-
-        value:
-          value,
-
-        locked:
-          false
-
-      };
-
-
-      /*
-        Sirf selected section me result add hoga.
-      */
-
-      data[section].push(newResult);
-
-
-      /*
-        Firebase me save.
-      */
-
-      await setDoc(
-        siteRef,
-        data
-      );
-
-
-      $("resultMsg").textContent =
-        "✅ Result successfully add ho gaya!";
-
-      $("resultMsg").className =
-        "staff-message success";
-
-
-      /*
-        Form clear.
-      */
-
-      $("name").value = "";
-      $("time").value = "";
-      $("value").value = "";
-      $("section").value = "live";
-
-    }
-
-    catch(error){
-
-      console.error(error);
-
-      $("resultMsg").textContent =
-        "❌ Result save nahi hua. Firebase rules check karo.";
-
-      $("resultMsg").className =
-        "staff-message error";
-
-    }
-
+  if(!Array.isArray(data.live)){
+    data.live = [];
   }
-);
 
+  if(!Array.isArray(data.next)){
+    data.next = [];
+  }
 
-/* ================= LOGOUT ================= */
+  if(!data.records){
+    data.records = {};
+  }
+
+  const newResult = {
+
+    id:
+      crypto.randomUUID(),
+
+    name:
+      name,
+
+    time:
+      to12(time),
+
+    value:
+      value,
+
+    locked:
+      false
+  };
+
+  data[section].push(newResult);
+
+  await setDoc(
+    siteRef,
+    data
+  );
+
+  $("resultMsg").textContent =
+    "✅ Result successfully add ho gaya!";
+
+  $("resultMsg").className =
+    "staff-message success";
+
+  $("name").value = "";
+  $("time").value = "";
+  $("value").value = "";
+  $("section").value = "live";
+
+}
+
+catch(error){
+
+  console.error(error);
+
+  $("resultMsg").textContent =
+    "❌ Result save nahi hua. Firebase rules check karo.";
+
+  $("resultMsg").className =
+    "staff-message error";
+
+}
+
+});
+
 
 $("logoutBtn").addEventListener(
   "click",
@@ -603,4 +569,4 @@ $("logoutBtn").addEventListener(
 </script>
 
 </body>
-          </html>
+</html>
