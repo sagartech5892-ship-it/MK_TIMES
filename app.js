@@ -3,11 +3,15 @@ import {
   onSnapshot,
   db,
   doc,
+  getDoc,
   runTransaction,
-  setDoc,
   onSnapshot as firestoreOnSnapshot
 } from "./firebase.js";
 
+
+/* =================================
+   FALLBACK
+================================= */
 
 const fallback = {
 
@@ -43,24 +47,8 @@ const fallback = {
 };
 
 
-let data = fallback;
-
-
-/* =================================
-   RESULT SUMMARY
-================================= */
-
-let summaryData = {
-
-  date:"",
-  SM:"--",
-  DB:"--",
-  SG:"--",
-  FB:"--",
-  GB:"--",
-  GL:"--",
-  DS:"--"
-
+let data = {
+  ...fallback
 };
 
 
@@ -133,15 +121,15 @@ function getViewerId(){
 
 function todayKey(){
 
-  const d = new Date();
-
+  const d =
+    new Date();
 
   return (
 
     d.getFullYear() +
     "-" +
     String(
-      d.getMonth() + 1
+      d.getMonth()+1
     ).padStart(2,"0") +
     "-" +
     String(
@@ -179,7 +167,8 @@ function safeId(value){
 
 function hashString(value){
 
-  let hash = 2166136261;
+  let hash =
+    2166136261;
 
 
   for(
@@ -315,12 +304,10 @@ async function countView(result){
 
         const currentCount =
           counterSnap.exists()
-
-          ? Number(
-              counterSnap.data().count || 0
-            )
-
-          : 0;
+            ? Number(
+                counterSnap.data().count || 0
+              )
+            : 0;
 
 
         transaction.set(
@@ -387,7 +374,7 @@ function updateTotalViews(total){
 
 
 /* =================================
-   VIEW COUNTS LISTENERS
+   VIEW COUNT LISTENERS
 ================================= */
 
 let viewUnsubscribers = [];
@@ -395,17 +382,16 @@ let viewUnsubscribers = [];
 
 function clearViewListeners(){
 
-  viewUnsubscribers
-    .forEach(
-      unsubscribe => {
+  viewUnsubscribers.forEach(
+    unsubscribe => {
 
-        try{
-          unsubscribe();
-        }
-        catch(_){}
-
+      try{
+        unsubscribe();
       }
-    );
+      catch(_){}
+
+    }
+  );
 
 
   viewUnsubscribers = [];
@@ -456,107 +442,107 @@ function listenToViewCounts(results){
     new Map();
 
 
-  unique.forEach(result => {
+  unique.forEach(
+    result => {
 
-    const resultId =
-      getResultId(result);
-
-
-    const counterRef =
-      doc(
-        db,
-        "resultViews",
-        safeId(resultId)
-      );
+      const resultId =
+        getResultId(result);
 
 
-    const unsubscribe =
-      firestoreOnSnapshot(
-
-        counterRef,
-
-        snap => {
-
-          const count =
-            snap.exists()
-
-            ? Number(
-                snap.data().count || 0
-              )
-
-            : 0;
+      const counterRef =
+        doc(
+          db,
+          "resultViews",
+          safeId(resultId)
+        );
 
 
-          counts.set(
-            resultId,
-            count
-          );
+      const unsubscribe =
+        firestoreOnSnapshot(
 
+          counterRef,
 
-          const total =
-            Array.from(
-              counts.values()
-            )
-            .reduce(
-              (sum,value) =>
-                sum + value,
-              0
-            );
+          snap => {
 
+            const count =
+              snap.exists()
+                ? Number(
+                    snap.data().count || 0
+                  )
+                : 0;
 
-          updateTotalViews(
-            total
-          );
-
-        },
-
-        error => {
-
-          console.error(
-            "View count read error:",
-            error
-          );
-
-
-          if(
-            !counts.has(
-              resultId
-            )
-          ){
 
             counts.set(
               resultId,
-              0
+              count
+            );
+
+
+            const total =
+              Array.from(
+                counts.values()
+              )
+              .reduce(
+                (sum,value) =>
+                  sum + value,
+                0
+              );
+
+
+            updateTotalViews(
+              total
+            );
+
+          },
+
+          error => {
+
+            console.error(
+              "View count read error:",
+              error
+            );
+
+
+            if(
+              !counts.has(
+                resultId
+              )
+            ){
+
+              counts.set(
+                resultId,
+                0
+              );
+
+            }
+
+
+            const total =
+              Array.from(
+                counts.values()
+              )
+              .reduce(
+                (sum,value) =>
+                  sum + value,
+                0
+              );
+
+
+            updateTotalViews(
+              total
             );
 
           }
 
-
-          const total =
-            Array.from(
-              counts.values()
-            )
-            .reduce(
-              (sum,value) =>
-                sum + value,
-              0
-            );
+        );
 
 
-          updateTotalViews(
-            total
-          );
-
-        }
-
+      viewUnsubscribers.push(
+        unsubscribe
       );
 
-
-    viewUnsubscribers.push(
-      unsubscribe
-    );
-
-  });
+    }
+  );
 
 }
 
@@ -652,7 +638,8 @@ function updateVerifiedStatus(){
 
   else{
 
-    el.textContent = "";
+    el.textContent =
+      "";
 
   }
 
@@ -683,7 +670,8 @@ function updateLastUpdated(){
 
   if(!value){
 
-    el.textContent = "";
+    el.textContent =
+      "";
 
     return;
 
@@ -704,7 +692,8 @@ function updateLastUpdated(){
 
   catch(_){
 
-    el.textContent = "";
+    el.textContent =
+      "";
 
     return;
 
@@ -717,7 +706,8 @@ function updateLastUpdated(){
     )
   ){
 
-    el.textContent = "";
+    el.textContent =
+      "";
 
     return;
 
@@ -758,14 +748,16 @@ function setupNotifications(){
     !("Notification" in window)
   ){
 
-    btn.hidden = true;
+    btn.hidden =
+      true;
 
     return;
 
   }
 
 
-  btn.hidden = false;
+  btn.hidden =
+    false;
 
 
   if(
@@ -789,11 +781,13 @@ function setupNotifications(){
 
 
         if(
-          permission === "granted"
+          permission ===
+          "granted"
         ){
 
           btn.textContent =
             "🔔 Notifications On";
+
 
           new Notification(
             "MK Time",
@@ -822,14 +816,266 @@ function setupNotifications(){
 
 
 /* =================================
-   AUTO ARCHIVE OLD DAY RESULTS
+   RESULT SUMMARY
+================================= */
+
+let summaryData = {
+  month:"",
+  records:{}
+};
+
+
+async function loadResultSummary(){
+
+  try{
+
+    const resultRef =
+      doc(
+        db,
+        "resultSummary",
+        "current"
+      );
+
+
+    const snap =
+      await getDoc(
+        resultRef
+      );
+
+
+    if(
+      snap.exists()
+    ){
+
+      summaryData =
+        {
+          month:
+            snap.data().month || "",
+
+          records:
+            snap.data().records || {}
+
+        };
+
+    }
+
+    else{
+
+      summaryData =
+        {
+          month:"",
+          records:{}
+        };
+
+    }
+
+
+    renderResultSummary();
+
+  }
+
+  catch(error){
+
+    console.error(
+      "Result summary error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =================================
+   RENDER RESULT SUMMARY
+================================= */
+
+function renderResultSummary(){
+
+  const box =
+    document.getElementById(
+      "todayYesterdayResults"
+    );
+
+
+  if(!box){
+    return;
+  }
+
+
+  const columns = [
+    "SM",
+    "DB",
+    "SG",
+    "FB",
+    "GB",
+    "GL",
+    "DS"
+  ];
+
+
+  const records =
+    summaryData.records || {};
+
+
+  const dates =
+    Object.keys(records)
+      .sort(
+        (a,b) =>
+          Number(a) -
+          Number(b)
+      );
+
+
+  /*
+     Agar koi result save nahi hai.
+  */
+
+  if(!dates.length){
+
+    box.innerHTML = `
+      <div class="summary-table-wrap">
+
+        <h3 class="summary-month">
+          ${escapeHtml(
+            summaryData.month || ""
+          )}
+        </h3>
+
+        <table class="summary-table">
+
+          <thead>
+            <tr>
+
+              <th>DATE</th>
+
+              ${columns.map(
+                x =>
+                  `<th>${x}</th>`
+              ).join("")}
+
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr>
+
+              <td>--</td>
+
+              ${columns.map(
+                () =>
+                  `<td>--</td>`
+              ).join("")}
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  /*
+     Pure month ki saved rows.
+  */
+
+  box.innerHTML = `
+
+    <div class="summary-table-wrap">
+
+      <h2 class="summary-month">
+        ${escapeHtml(
+          summaryData.month || ""
+        )}
+      </h2>
+
+      <table class="summary-table">
+
+        <thead>
+
+          <tr>
+
+            <th>DATE</th>
+
+            ${columns.map(
+              x =>
+                `<th>${x}</th>`
+            ).join("")}
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${
+            dates.map(
+              date => {
+
+                const row =
+                  records[date] || {};
+
+
+                return `
+
+                  <tr>
+
+                    <td>
+                      ${escapeHtml(date)}
+                    </td>
+
+                    ${
+                      columns.map(
+                        column => `
+
+                          <td>
+                            ${escapeHtml(
+                              row[column] || "--"
+                            )}
+                          </td>
+
+                        `
+                      ).join("")
+                    }
+
+                  </tr>
+
+                `;
+
+              }
+            ).join("")
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =================================
+   AUTO ARCHIVE
 ================================= */
 
 function dateKey(){
 
-  const d = new Date();
+  const d =
+    new Date();
+
 
   return (
+
     d.getFullYear() +
     "-" +
     String(
@@ -839,6 +1085,7 @@ function dateKey(){
     String(
       d.getDate()
     ).padStart(2,"0")
+
   );
 
 }
@@ -848,6 +1095,7 @@ function displayDate(key){
 
   const [y,m,d] =
     String(key).split("-");
+
 
   return d && m && y
     ? `${d}-${m}-${y}`
@@ -861,18 +1109,20 @@ function monthKey(key){
   const [y,m] =
     String(key).split("-");
 
+
   if(
     !y ||
     !m
   ){
 
-    return new Date().toLocaleString(
-      "en-US",
-      {
-        month:"long",
-        year:"numeric"
-      }
-    );
+    return new Date()
+      .toLocaleString(
+        "en-US",
+        {
+          month:"long",
+          year:"numeric"
+        }
+      );
 
   }
 
@@ -881,7 +1131,8 @@ function monthKey(key){
     Number(y),
     Number(m)-1,
     1
-  ).toLocaleString(
+  )
+  .toLocaleString(
     "en-US",
     {
       month:"long",
@@ -902,6 +1153,7 @@ async function archiveOldDayResults(){
 
     data.archiveDate =
       today;
+
 
     try{
 
@@ -947,7 +1199,8 @@ async function archiveOldDayResults(){
 
   if(!data.records){
 
-    data.records = {};
+    data.records =
+      {};
 
   }
 
@@ -962,7 +1215,8 @@ async function archiveOldDayResults(){
     )
   ){
 
-    data.records[month] = [];
+    data.records[month] =
+      [];
 
   }
 
@@ -978,7 +1232,8 @@ async function archiveOldDayResults(){
 
         `${item.name || ""}${
           item.value
-            ? " — " + item.value
+            ? " — " +
+              item.value
             : ""
         }`
 
@@ -988,7 +1243,8 @@ async function archiveOldDayResults(){
   );
 
 
-  data.live = [];
+  data.live =
+    [];
 
   data.archiveDate =
     today;
@@ -1011,164 +1267,6 @@ async function archiveOldDayResults(){
     );
 
   }
-
-}
-
-
-/* =================================
-   RESULT SUMMARY RENDER
-================================= */
-
-function renderResultSummary(){
-
-  const box =
-    document.getElementById(
-      "todayYesterdayResults"
-    );
-
-
-  if(!box){
-    return;
-  }
-
-
-  const columns = [
-    "SM",
-    "DB",
-    "SG",
-    "FB",
-    "GB",
-    "GL",
-    "DS"
-  ];
-
-
-  box.innerHTML = `
-
-    <div class="summary-table-wrap">
-
-      <table class="summary-table">
-
-        <thead>
-
-          <tr>
-
-            <th>DATE</th>
-
-            ${columns
-              .map(
-                key =>
-                  `<th>${key}</th>`
-              )
-              .join("")}
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          <tr>
-
-            <td>
-              ${escapeHtml(
-                summaryData.date || "--"
-              )}
-            </td>
-
-            ${columns
-              .map(
-                key => `
-                  <td>
-                    ${escapeHtml(
-                      summaryData[key] || "--"
-                    )}
-                  </td>
-                `
-              )
-              .join("")}
-
-          </tr>
-
-        </tbody>
-
-      </table>
-
-    </div>
-
-  `;
-
-}
-
-
-/* =================================
-   LISTEN RESULT SUMMARY
-================================= */
-
-function listenToResultSummary(){
-
-  const summaryRef =
-    doc(
-      db,
-      "resultSummary",
-      "current"
-    );
-
-
-  firestoreOnSnapshot(
-
-    summaryRef,
-
-    snap => {
-
-      if(
-        snap.exists()
-      ){
-
-        summaryData = {
-
-          ...summaryData,
-          ...snap.data()
-
-        };
-
-      }
-
-      else{
-
-        summaryData = {
-
-          date:"",
-          SM:"--",
-          DB:"--",
-          SG:"--",
-          FB:"--",
-          GB:"--",
-          GL:"--",
-          DS:"--"
-
-        };
-
-      }
-
-
-      renderResultSummary();
-
-    },
-
-    error => {
-
-      console.error(
-        "Result Summary error:",
-        error
-      );
-
-
-      renderResultSummary();
-
-    }
-
-  );
 
 }
 
@@ -1214,6 +1312,8 @@ function render(){
 
   updateLastUpdated();
 
+  renderResultSummary();
+
 
   const month =
     document.getElementById(
@@ -1227,7 +1327,8 @@ function render(){
       month.value;
 
 
-    month.innerHTML = "";
+    month.innerHTML =
+      "";
 
 
     Object.keys(
@@ -1235,30 +1336,35 @@ function render(){
     )
     .sort()
     .reverse()
-    .forEach(k => {
+    .forEach(
+      k => {
 
-      const option =
-        document.createElement(
-          "option"
+        const option =
+          document.createElement(
+            "option"
+          );
+
+
+        option.value =
+          k;
+
+        option.textContent =
+          k;
+
+        month.appendChild(
+          option
         );
 
-
-      option.value = k;
-
-      option.textContent = k;
-
-      month.appendChild(
-        option
-      );
-
-    });
+      }
+    );
 
 
     if(
       [...month.options]
         .some(
           option =>
-            option.value === current
+            option.value ===
+            current
         )
     ){
 
@@ -1325,43 +1431,46 @@ if(year){
    REFRESH
 ================================= */
 
-let refreshing = false;
+let refreshing =
+  false;
 
 
 window.refreshResults =
-  function(){
+function(){
 
-    if(refreshing){
-      return;
-    }
-
-
-    refreshing = true;
+  if(refreshing){
+    return;
+  }
 
 
-    const btn =
-      document.getElementById(
-        "refreshBtn"
-      );
+  refreshing =
+    true;
 
 
-    if(btn){
-
-      btn.disabled = true;
-
-      btn.textContent =
-        "↻ Refreshing...";
-
-    }
-
-
-    setTimeout(
-      () =>
-        location.reload(),
-      150
+  const btn =
+    document.getElementById(
+      "refreshBtn"
     );
 
-  };
+
+  if(btn){
+
+    btn.disabled =
+      true;
+
+    btn.textContent =
+      "↻ Refreshing...";
+
+  }
+
+
+  setTimeout(
+    () =>
+      location.reload(),
+    150
+  );
+
+};
 
 
 /* =================================
@@ -1369,95 +1478,95 @@ window.refreshResults =
 ================================= */
 
 window.showRecords =
-  function(){
+function(){
 
-    const month =
-      document.getElementById(
-        "month"
-      );
-
-
-    const el =
-      document.getElementById(
-        "records"
-      );
+  const month =
+    document.getElementById(
+      "month"
+    );
 
 
-    if(
-      !month ||
-      !el
-    ){
-
-      return;
-
-    }
+  const el =
+    document.getElementById(
+      "records"
+    );
 
 
-    const rows =
-      data.records?.[
-        month.value
-      ] || [];
+  if(
+    !month ||
+    !el
+  ){
+
+    return;
+
+  }
 
 
-    el.innerHTML = `
+  const rows =
+    data.records?.[
+      month.value
+    ] || [];
 
-      <table>
 
-        <thead>
+  el.innerHTML = `
 
-          <tr>
+    <table>
 
-            <th>
-              Date
-            </th>
+      <thead>
 
-            <th>
-              Status
-            </th>
+        <tr>
 
-            <th>
-              Value
-            </th>
+          <th>
+            Date
+          </th>
 
-          </tr>
+          <th>
+            Status
+          </th>
 
-        </thead>
+          <th>
+            Value
+          </th>
 
-        <tbody>
+        </tr>
 
-          ${
-            rows
-              .map(
-                r => `
+      </thead>
 
-                  <tr>
+      <tbody>
 
-                    <td>
-                      ${escapeHtml(r[0])}
-                    </td>
+        ${
+          rows
+            .map(
+              r => `
 
-                    <td>
-                      ${escapeHtml(r[1])}
-                    </td>
+                <tr>
 
-                    <td>
-                      ${escapeHtml(r[2])}
-                    </td>
+                  <td>
+                    ${escapeHtml(r[0])}
+                  </td>
 
-                  </tr>
+                  <td>
+                    ${escapeHtml(r[1])}
+                  </td>
 
-                `
-              )
-              .join("")
-          }
+                  <td>
+                    ${escapeHtml(r[2])}
+                  </td>
 
-        </tbody>
+                </tr>
 
-      </table>
+              `
+            )
+            .join("")
+        }
 
-    `;
+      </tbody>
 
-  };
+    </table>
+
+  `;
+
+};
 
 
 /* =================================
@@ -1483,24 +1592,15 @@ onSnapshot(
 
     }
 
-    else{
 
-      data = {
+    archiveOldDayResults()
+      .then(
+        () => {
 
-        ...fallback
+          render();
 
-      };
-
-    }
-
-
-    archiveOldDayResults().then(
-      () => {
-
-        render();
-
-      }
-    );
+        }
+      );
 
   },
 
@@ -1520,11 +1620,249 @@ onSnapshot(
 
 
 /* =================================
+   RESULT SUMMARY REAL-TIME LISTENER
+================================= */
+
+onSnapshot(
+
+  doc(
+    db,
+    "resultSummary",
+    "current"
+  ),
+
+  snap => {
+
+    if(
+      snap.exists()
+    ){
+
+      summaryData = {
+
+        month:
+          snap.data().month || "",
+
+        records:
+          snap.data().records || {}
+
+      };
+
+    }
+
+    else{
+
+      summaryData = {
+
+        month:"",
+        records:{}
+
+      };
+
+    }
+
+
+    renderResultSummary();
+
+  },
+
+  error => {
+
+    console.error(
+      "Result summary listener error:",
+      error
+    );
+
+  }
+
+);
+
+
+/* =================================
    START
 ================================= */
 
-setupNotifications();
+/*
+   RESULT SUMMARY LISTENER
+   Multiple dates show hongi:
+   29
+   30
+   31
+   ...
+*/
 
-render();
+const resultSummaryRef = collection(
+  db,
+  "resultSummary"
+);
 
-listenToResultSummary();
+onSnapshot(
+
+  resultSummaryRef,
+
+  snapshot => {
+
+    const rows = [];
+
+    snapshot.forEach(docSnap => {
+
+      const item = docSnap.data() || {};
+
+      rows.push({
+
+        date: Number(item.date || 0),
+
+        SM: item.SM || "--",
+        DB: item.DB || "--",
+        SG: item.SG || "--",
+        FB: item.FB || "--",
+        GB: item.GB || "--",
+        GL: item.GL || "--",
+        DS: item.DS || "--"
+
+      });
+
+    });
+
+
+    rows.sort(
+      (a, b) =>
+        a.date - b.date
+    );
+
+
+    const box =
+      document.getElementById(
+        "todayYesterdayResults"
+      );
+
+
+    if (!box) return;
+
+
+    const columns = [
+      "SM",
+      "DB",
+      "SG",
+      "FB",
+      "GB",
+      "GL",
+      "DS"
+    ];
+
+
+    box.innerHTML = `
+
+      <div class="summary-table-wrap">
+
+        <table class="summary-table">
+
+          <thead>
+
+            <tr>
+
+              <th>DATE</th>
+
+              ${columns
+                .map(
+                  column =>
+                    `<th>${column}</th>`
+                )
+                .join("")}
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            ${
+              rows.length
+
+                ? rows
+                    .map(
+                      row => `
+
+                        <tr>
+
+                          <td>
+                            ${escapeHtml(row.date)}
+                          </td>
+
+                          ${columns
+                            .map(
+                              column => `
+
+                                <td>
+                                  ${escapeHtml(
+                                    row[column]
+                                  )}
+                                </td>
+
+                              `
+                            )
+                            .join("")}
+
+                        </tr>
+
+                      `
+                    )
+                    .join("")
+
+                : `
+
+                  <tr>
+
+                    <td
+                      colspan="8"
+                      style="text-align:center;"
+                    >
+                      No results yet.
+                    </td>
+
+                  </tr>
+
+                `
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    `;
+
+  },
+
+
+  error => {
+
+    console.error(
+      "Result summary listener error:",
+      error
+    );
+
+  }
+
+);
+
+
+/* =================================
+   INITIAL RENDER
+================================= */
+
+try {
+
+  render();
+
+}
+
+catch(error) {
+
+  console.error(
+    "Initial render error:",
+    error
+  );
+
+      }
