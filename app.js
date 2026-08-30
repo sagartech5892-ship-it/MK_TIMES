@@ -5,44 +5,41 @@ import {
   doc,
   getDoc,
   runTransaction,
-  onSnapshot as firestoreOnSnapshot
+  onSnapshot as firestoreOnSnapshot,
+  setDoc
 } from "./firebase.js";
 
-
-/* =================================
-   FALLBACK
-================================= */
 
 const fallback = {
 
   live: [
     {
-      id:"1",
-      name:"Morning Update",
-      time:"11:50 AM",
-      value:"Published",
-      locked:false
+      id: "1",
+      name: "Morning Update",
+      time: "11:50 AM",
+      value: "Published",
+      locked: false
     },
     {
-      id:"2",
-      name:"Afternoon Update",
-      time:"02:45 PM",
-      value:"Published",
-      locked:false
+      id: "2",
+      name: "Afternoon Update",
+      time: "02:45 PM",
+      value: "Published",
+      locked: false
     }
   ],
 
   next: [
     {
-      id:"3",
-      name:"Evening Update",
-      time:"04:15 PM",
-      value:"Scheduled",
-      locked:false
+      id: "3",
+      name: "Evening Update",
+      time: "04:15 PM",
+      value: "Scheduled",
+      locked: false
     }
   ],
 
-  records:{}
+  records: {}
 
 };
 
@@ -52,31 +49,23 @@ let data = {
 };
 
 
-/* =================================
-   HTML ESCAPE
-================================= */
+function escapeHtml(value) {
 
-function escapeHtml(v){
-
-  return String(v ?? "").replace(
+  return String(value ?? "").replace(
     /[&<>"']/g,
     m => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
     }[m])
   );
 
 }
 
 
-/* =================================
-   VIEWER ID
-================================= */
-
-function getViewerId(){
+function getViewerId() {
 
   const key =
     "mk_time_viewer_id_v1";
@@ -84,23 +73,19 @@ function getViewerId(){
   let id =
     localStorage.getItem(key);
 
-
-  if(!id){
+  if (!id) {
 
     id =
       (
         typeof crypto !== "undefined" &&
         typeof crypto.randomUUID === "function"
       )
-
-      ? crypto.randomUUID()
-
-      : Date.now().toString(36) +
-        "-" +
-        Math.random()
-          .toString(36)
-          .slice(2);
-
+        ? crypto.randomUUID()
+        : Date.now().toString(36) +
+          "-" +
+          Math.random()
+            .toString(36)
+            .slice(2);
 
     localStorage.setItem(
       key,
@@ -109,99 +94,67 @@ function getViewerId(){
 
   }
 
-
   return id;
 
 }
 
 
-/* =================================
-   TODAY KEY
-================================= */
+function todayKey() {
 
-function todayKey(){
-
-  const d =
-    new Date();
+  const d = new Date();
 
   return (
-
     d.getFullYear() +
     "-" +
-    String(
-      d.getMonth()+1
-    ).padStart(2,"0") +
+    String(d.getMonth() + 1).padStart(2, "0") +
     "-" +
-    String(
-      d.getDate()
-    ).padStart(2,"0")
-
+    String(d.getDate()).padStart(2, "0")
   );
 
 }
 
 
-/* =================================
-   SAFE FIRESTORE ID
-================================= */
+function safeId(value) {
 
-function safeId(value){
-
-  return String(
-    value ?? ""
-  )
-  .replace(
-    /[^A-Za-z0-9_-]/g,
-    "_"
-  )
-  .slice(0,120)
-
-  || "unknown";
+  return String(value ?? "")
+    .replace(
+      /[^A-Za-z0-9_-]/g,
+      "_"
+    )
+    .slice(0, 120) || "unknown";
 
 }
 
 
-/* =================================
-   HASH
-================================= */
+function hashString(value) {
 
-function hashString(value){
+  let hash = 2166136261;
 
-  let hash =
-    2166136261;
-
-
-  for(
-    let i=0;
-    i<value.length;
+  for (
+    let i = 0;
+    i < value.length;
     i++
-  ){
+  ) {
 
     hash ^= value.charCodeAt(i);
 
-    hash =
-      Math.imul(
-        hash,
-        16777619
-      );
+    hash = Math.imul(
+      hash,
+      16777619
+    );
 
   }
-
 
   return (
     hash >>> 0
   )
-  .toString(16)
-  .padStart(8,"0");
+    .toString(16)
+    .padStart(8, "0");
 
 }
 
 
-/* =================================
-   RESULT ID
-================================= */
-
-function getResultId(result){
+function getResultId(result) {
 
   return String(
     result?.id ?? ""
@@ -210,32 +163,21 @@ function getResultId(result){
 }
 
 
-/* =================================
-   COUNT VIEW
-================================= */
-
-async function countView(result){
+async function countView(result) {
 
   const resultId =
     getResultId(result);
 
-
-  if(!resultId){
-    return;
-  }
-
+  if (!resultId) return;
 
   let viewerId;
 
-
-  try{
+  try {
 
     viewerId =
       getViewerId();
 
-  }
-
-  catch(error){
+  } catch (error) {
 
     console.error(
       "Viewer ID error:",
@@ -246,10 +188,8 @@ async function countView(result){
 
   }
 
-
   const day =
     todayKey();
-
 
   const markerId =
     hashString(
@@ -260,14 +200,12 @@ async function countView(result){
       day
     );
 
-
   const counterRef =
     doc(
       db,
       "resultViews",
       safeId(resultId)
     );
-
 
   const markerRef =
     doc(
@@ -278,8 +216,7 @@ async function countView(result){
       markerId
     );
 
-
-  try{
+  try {
 
     await runTransaction(
       db,
@@ -290,17 +227,14 @@ async function countView(result){
             markerRef
           );
 
-
-        if(markerSnap.exists()){
+        if (markerSnap.exists()) {
           return;
         }
-
 
         const counterSnap =
           await transaction.get(
             counterRef
           );
-
 
         const currentCount =
           counterSnap.exists()
@@ -309,7 +243,6 @@ async function countView(result){
               )
             : 0;
 
-
         transaction.set(
           counterRef,
           {
@@ -317,15 +250,14 @@ async function countView(result){
               currentCount + 1
           },
           {
-            merge:true
+            merge: true
           }
         );
-
 
         transaction.set(
           markerRef,
           {
-            day:day,
+            day: day,
             createdAt:
               new Date().toISOString()
           }
@@ -334,9 +266,7 @@ async function countView(result){
       }
     );
 
-  }
-
-  catch(error){
+  } catch (error) {
 
     console.error(
       "View counter error:",
@@ -346,24 +276,16 @@ async function countView(result){
   }
 
 }
-
-
 /* =================================
    TOTAL VIEWS
 ================================= */
 
-function updateTotalViews(total){
+function updateTotalViews(total) {
 
   const el =
-    document.getElementById(
-      "totalViews"
-    );
+    document.getElementById("totalViews");
 
-
-  if(!el){
-    return;
-  }
-
+  if (!el) return;
 
   el.textContent =
     "👁️ " +
@@ -380,19 +302,17 @@ function updateTotalViews(total){
 let viewUnsubscribers = [];
 
 
-function clearViewListeners(){
+function clearViewListeners() {
 
   viewUnsubscribers.forEach(
     unsubscribe => {
 
-      try{
+      try {
         unsubscribe();
-      }
-      catch(_){}
+      } catch (_) {}
 
     }
   );
-
 
   viewUnsubscribers = [];
 
@@ -403,10 +323,9 @@ function clearViewListeners(){
    LIVE VIEW COUNTS
 ================================= */
 
-function listenToViewCounts(results){
+function listenToViewCounts(results) {
 
   clearViewListeners();
-
 
   const items =
     (results || [])
@@ -415,8 +334,7 @@ function listenToViewCounts(results){
           getResultId(item)
       );
 
-
-  if(!items.length){
+  if (!items.length) {
 
     updateTotalViews(0);
 
@@ -442,107 +360,97 @@ function listenToViewCounts(results){
     new Map();
 
 
-  unique.forEach(
-    result => {
+  unique.forEach(result => {
 
-      const resultId =
-        getResultId(result);
-
-
-      const counterRef =
-        doc(
-          db,
-          "resultViews",
-          safeId(resultId)
-        );
+    const resultId =
+      getResultId(result);
 
 
-      const unsubscribe =
-        firestoreOnSnapshot(
+    const counterRef =
+      doc(
+        db,
+        "resultViews",
+        safeId(resultId)
+      );
 
-          counterRef,
 
-          snap => {
+    const unsubscribe =
+      firestoreOnSnapshot(
 
-            const count =
-              snap.exists()
-                ? Number(
-                    snap.data().count || 0
-                  )
-                : 0;
+        counterRef,
 
+        snap => {
+
+          const count =
+            snap.exists()
+              ? Number(
+                  snap.data().count || 0
+                )
+              : 0;
+
+
+          counts.set(
+            resultId,
+            count
+          );
+
+
+          const total =
+            Array.from(
+              counts.values()
+            ).reduce(
+              (sum, value) =>
+                sum + value,
+              0
+            );
+
+
+          updateTotalViews(total);
+
+        },
+
+        error => {
+
+          console.error(
+            "View count read error:",
+            error
+          );
+
+
+          if (
+            !counts.has(resultId)
+          ) {
 
             counts.set(
               resultId,
-              count
-            );
-
-
-            const total =
-              Array.from(
-                counts.values()
-              )
-              .reduce(
-                (sum,value) =>
-                  sum + value,
-                0
-              );
-
-
-            updateTotalViews(
-              total
-            );
-
-          },
-
-          error => {
-
-            console.error(
-              "View count read error:",
-              error
-            );
-
-
-            if(
-              !counts.has(
-                resultId
-              )
-            ){
-
-              counts.set(
-                resultId,
-                0
-              );
-
-            }
-
-
-            const total =
-              Array.from(
-                counts.values()
-              )
-              .reduce(
-                (sum,value) =>
-                  sum + value,
-                0
-              );
-
-
-            updateTotalViews(
-              total
+              0
             );
 
           }
 
-        );
+
+          const total =
+            Array.from(
+              counts.values()
+            ).reduce(
+              (sum, value) =>
+                sum + value,
+              0
+            );
 
 
-      viewUnsubscribers.push(
-        unsubscribe
+          updateTotalViews(total);
+
+        }
+
       );
 
-    }
-  );
+
+    viewUnsubscribers.push(
+      unsubscribe
+    );
+
+  });
 
 }
 
@@ -551,15 +459,12 @@ function listenToViewCounts(results){
    CARDS
 ================================= */
 
-function cards(id,items){
+function cards(id, items) {
 
   const el =
     document.getElementById(id);
 
-
-  if(!el){
-    return;
-  }
+  if (!el) return;
 
 
   el.innerHTML =
@@ -602,17 +507,14 @@ function cards(id,items){
    VERIFIED STATUS
 ================================= */
 
-function updateVerifiedStatus(){
+function updateVerifiedStatus() {
 
   const el =
     document.getElementById(
       "verifiedStatus"
     );
 
-
-  if(!el){
-    return;
-  }
+  if (!el) return;
 
 
   const allResults = [
@@ -623,20 +525,18 @@ function updateVerifiedStatus(){
   ];
 
 
-  if(
+  if (
     allResults.length &&
     allResults.every(
       item =>
         item.verified === true
     )
-  ){
+  ) {
 
     el.textContent =
       "✓ Verified";
 
-  }
-
-  else{
+  } else {
 
     el.textContent =
       "";
@@ -650,17 +550,14 @@ function updateVerifiedStatus(){
    LAST UPDATED
 ================================= */
 
-function updateLastUpdated(){
+function updateLastUpdated() {
 
   const el =
     document.getElementById(
       "lastUpdated"
     );
 
-
-  if(!el){
-    return;
-  }
+  if (!el) return;
 
 
   const value =
@@ -668,7 +565,7 @@ function updateLastUpdated(){
     data.lastUpdated;
 
 
-  if(!value){
+  if (!value) {
 
     el.textContent =
       "";
@@ -681,16 +578,14 @@ function updateLastUpdated(){
   let date;
 
 
-  try{
+  try {
 
     date =
       value?.toDate
         ? value.toDate()
         : new Date(value);
 
-  }
-
-  catch(_){
+  } catch (_) {
 
     el.textContent =
       "";
@@ -700,11 +595,11 @@ function updateLastUpdated(){
   }
 
 
-  if(
+  if (
     Number.isNaN(
       date.getTime()
     )
-  ){
+  ) {
 
     el.textContent =
       "";
@@ -719,8 +614,8 @@ function updateLastUpdated(){
     date.toLocaleTimeString(
       undefined,
       {
-        hour:"2-digit",
-        minute:"2-digit"
+        hour: "2-digit",
+        minute: "2-digit"
       }
     );
 
@@ -731,22 +626,19 @@ function updateLastUpdated(){
    NOTIFICATIONS
 ================================= */
 
-function setupNotifications(){
+function setupNotifications() {
 
   const btn =
     document.getElementById(
       "notifyBtn"
     );
 
-
-  if(!btn){
-    return;
-  }
+  if (!btn) return;
 
 
-  if(
+  if (
     !("Notification" in window)
-  ){
+  ) {
 
     btn.hidden =
       true;
@@ -760,10 +652,10 @@ function setupNotifications(){
     false;
 
 
-  if(
+  if (
     Notification.permission ===
     "granted"
-  ){
+  ) {
 
     btn.textContent =
       "🔔 Notifications On";
@@ -772,18 +664,18 @@ function setupNotifications(){
 
 
   btn.onclick =
-    async function(){
+    async function() {
 
-      try{
+      try {
 
         const permission =
           await Notification.requestPermission();
 
 
-        if(
+        if (
           permission ===
           "granted"
-        ){
+        ) {
 
           btn.textContent =
             "🔔 Notifications On";
@@ -799,9 +691,7 @@ function setupNotifications(){
 
         }
 
-      }
-
-      catch(error){
+      } catch (error) {
 
         console.error(
           "Notification error:",
@@ -816,18 +706,25 @@ function setupNotifications(){
 
 
 /* =================================
-   RESULT SUMMARY
+   RESULT SUMMARY DATA
 ================================= */
 
 let summaryData = {
-  month:"",
-  records:{}
+
+  month: "",
+
+  year: "",
+
+  records: {}
+
 };
+/* =================================
+   LOAD RESULT SUMMARY
+================================= */
 
+async function loadResultSummary() {
 
-async function loadResultSummary(){
-
-  try{
+  try {
 
     const resultRef =
       doc(
@@ -843,38 +740,43 @@ async function loadResultSummary(){
       );
 
 
-    if(
-      snap.exists()
-    ){
+    if (snap.exists()) {
 
-      summaryData =
-        {
-          month:
-            snap.data().month || "",
+      const saved =
+        snap.data();
 
-          records:
-            snap.data().records || {}
 
-        };
+      summaryData = {
 
-    }
+        month:
+          saved.month || "",
 
-    else{
+        year:
+          saved.year || "",
 
-      summaryData =
-        {
-          month:"",
-          records:{}
-        };
+        records:
+          saved.records || {}
+
+      };
+
+    } else {
+
+      summaryData = {
+
+        month: "",
+
+        year: "",
+
+        records: {}
+
+      };
 
     }
 
 
     renderResultSummary();
 
-  }
-
-  catch(error){
+  } catch (error) {
 
     console.error(
       "Result summary error:",
@@ -887,10 +789,53 @@ async function loadResultSummary(){
 
 
 /* =================================
-   RENDER RESULT SUMMARY
+   MONTH DAYS
 ================================= */
 
-function renderResultSummary(){
+function getDaysInMonth(month, year) {
+
+  if (!month || !year) {
+    return 31;
+  }
+
+
+  const monthNumber = {
+
+    January: 1,
+    February: 2,
+    March: 3,
+    April: 4,
+    May: 5,
+    June: 6,
+    July: 7,
+    August: 8,
+    September: 9,
+    October: 10,
+    November: 11,
+    December: 12
+
+  }[month];
+
+
+  if (!monthNumber) {
+    return 31;
+  }
+
+
+  return new Date(
+    Number(year),
+    monthNumber,
+    0
+  ).getDate();
+
+}
+
+
+/* =================================
+   RESULT SUMMARY TABLE
+================================= */
+
+function renderResultSummary() {
 
   const box =
     document.getElementById(
@@ -898,12 +843,11 @@ function renderResultSummary(){
     );
 
 
-  if(!box){
-    return;
-  }
+  if (!box) return;
 
 
   const columns = [
+
     "SM",
     "DB",
     "SG",
@@ -911,6 +855,7 @@ function renderResultSummary(){
     "GB",
     "GL",
     "DS"
+
   ];
 
 
@@ -918,105 +863,108 @@ function renderResultSummary(){
     summaryData.records || {};
 
 
+  const month =
+    summaryData.month || "";
+
+
+  const year =
+    summaryData.year || "";
+
+
+  const monthTitle =
+    month
+      ? `${month}${year ? " " + year : ""}`
+      : "";
+
+
+  /*
+     Month ke total days
+  */
+
+  const totalDays =
+    getDaysInMonth(
+      month,
+      year
+    );
+
+
+  /*
+     Har date ki row banegi.
+     
+     Example:
+     29
+     30
+     31
+     
+     Aur agar month August hai
+     to 1 se 31 tak sab rows.
+  */
+
   const dates =
-    Object.keys(records)
-      .sort(
-        (a,b) =>
-          Number(a) -
-          Number(b)
-      );
+    Array.from(
+      {
+        length: totalDays
+      },
+      (_, index) =>
+        String(index + 1)
+    );
 
-
-  /*
-     Agar koi result save nahi hai.
-  */
-
-  if(!dates.length){
-
-    box.innerHTML = `
-      <div class="summary-table-wrap">
-
-        <h3 class="summary-month">
-          ${escapeHtml(
-            summaryData.month || ""
-          )}
-        </h3>
-
-        <table class="summary-table">
-
-          <thead>
-            <tr>
-
-              <th>DATE</th>
-
-              ${columns.map(
-                x =>
-                  `<th>${x}</th>`
-              ).join("")}
-
-            </tr>
-          </thead>
-
-          <tbody>
-
-            <tr>
-
-              <td>--</td>
-
-              ${columns.map(
-                () =>
-                  `<td>--</td>`
-              ).join("")}
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  /*
-     Pure month ki saved rows.
-  */
 
   box.innerHTML = `
 
     <div class="summary-table-wrap">
 
-      <h2 class="summary-month">
-        ${escapeHtml(
-          summaryData.month || ""
-        )}
-      </h2>
+      <div class="summary-month-box">
 
-      <table class="summary-table">
+        <span class="summary-month-icon">
+          📅
+        </span>
 
-        <thead>
+        <div>
 
-          <tr>
+          <div class="summary-month-title">
+            ${escapeHtml(
+              monthTitle || "RESULT"
+            )}
+          </div>
 
-            <th>DATE</th>
+          <div class="summary-month-subtitle">
+            Monthly Result
+          </div>
 
-            ${columns.map(
-              x =>
-                `<th>${x}</th>`
-            ).join("")}
+        </div>
 
-          </tr>
+      </div>
 
-        </thead>
 
-        <tbody>
+      <div class="summary-table-scroll">
 
-          ${
-            dates.map(
+        <table class="summary-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                DATE
+              </th>
+
+              ${columns.map(
+                column => `
+                  <th>
+                    ${column}
+                  </th>
+                `
+              ).join("")}
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            ${dates.map(
               date => {
 
                 const row =
@@ -1027,35 +975,49 @@ function renderResultSummary(){
 
                   <tr>
 
-                    <td>
-                      ${escapeHtml(date)}
+                    <td class="date-cell">
+
+                      <span class="date-number">
+                        ${escapeHtml(date)}
+                      </span>
+
                     </td>
 
-                    ${
-                      columns.map(
-                        column => `
+
+                    ${columns.map(
+                      column => {
+
+                        const value =
+                          row[column] || "--";
+
+
+                        return `
 
                           <td>
-                            ${escapeHtml(
-                              row[column] || "--"
-                            )}
+
+                            <span class="result-value">
+                              ${escapeHtml(value)}
+                            </span>
+
                           </td>
 
-                        `
-                      ).join("")
-                    }
+                        `;
+
+                      }
+                    ).join("")}
 
                   </tr>
 
                 `;
 
               }
-            ).join("")
-          }
+            ).join("")}
 
-        </tbody>
+          </tbody>
 
-      </table>
+        </table>
+
+      </div>
 
     </div>
 
@@ -1065,804 +1027,979 @@ function renderResultSummary(){
 
 
 /* =================================
-   AUTO ARCHIVE
+   SUMMARY TABLE FALLBACK STYLE
 ================================= */
 
-function dateKey(){
-
-  const d =
-    new Date();
+const summaryStyle =
+  document.createElement("style");
 
 
-  return (
+summaryStyle.textContent = `
 
-    d.getFullYear() +
-    "-" +
-    String(
-      d.getMonth()+1
-    ).padStart(2,"0") +
-    "-" +
-    String(
-      d.getDate()
-    ).padStart(2,"0")
-
-  );
-
-}
+  .summary-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 18px auto;
+    box-sizing: border-box;
+  }
 
 
-function displayDate(key){
+  .summary-month-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
 
-  const [y,m,d] =
-    String(key).split("-");
+    border-radius: 16px;
 
-
-  return d && m && y
-    ? `${d}-${m}-${y}`
-    : key;
-
-}
-
-
-function monthKey(key){
-
-  const [y,m] =
-    String(key).split("-");
-
-
-  if(
-    !y ||
-    !m
-  ){
-
-    return new Date()
-      .toLocaleString(
-        "en-US",
-        {
-          month:"long",
-          year:"numeric"
-        }
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255,255,255,.98),
+        rgba(240,244,255,.98)
       );
+
+    border: 1px solid
+      rgba(0,0,0,.08);
+
+    box-shadow:
+      0 8px 24px
+      rgba(0,0,0,.08);
+
+    box-sizing: border-box;
+  }
+
+
+  .summary-month-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #111827,
+        #374151
+      );
+
+    color: white;
+
+    font-size: 21px;
+
+    flex-shrink: 0;
+  }
+
+
+  .summary-month-title {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+
+
+  .summary-month-subtitle {
+    margin-top: 3px;
+    font-size: 12px;
+    opacity: .6;
+  }
+
+
+  .summary-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    border-radius: 16px;
+
+    box-shadow:
+      0 8px 25px
+      rgba(0,0,0,.08);
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+
+  .summary-table {
+    width: 100%;
+    min-width: 620px;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    overflow: hidden;
+
+    background: white;
+  }
+
+
+  .summary-table th {
+
+    padding: 11px 7px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #111827,
+        #374151
+      );
+
+    color: white;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    text-align: center;
+
+    white-space: nowrap;
+
+    border-right:
+      1px solid
+      rgba(255,255,255,.15);
+  }
+
+
+  .summary-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+  }
+
+
+  .summary-table td {
+
+    padding: 9px 6px;
+
+    text-align: center;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    border-right:
+      1px solid
+      rgba(0,0,0,.06);
+
+    border-bottom:
+      1px solid
+      rgba(0,0,0,.06);
+
+    white-space: nowrap;
+  }
+
+
+  .summary-table tbody tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+
+  .summary-table tbody tr:hover td {
+    background: #eef2ff;
+  }
+
+
+  .summary-table td:first-child {
+
+    position: sticky;
+    left: 0;
+
+    z-index: 2;
+
+    background: white;
+
+    font-weight: 900;
+  }
+
+
+  .summary-table tbody tr:nth-child(even)
+  td:first-child {
+    background: #f8fafc;
+  }
+
+
+  .date-number {
+
+    display: inline-flex;
+
+    min-width: 30px;
+    height: 30px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #111827,
+        #4b5563
+      );
+
+    color: white;
+
+    font-weight: 800;
+  }
+
+
+  .result-value {
+
+    display: inline-flex;
+
+    min-width: 34px;
+    min-height: 28px;
+
+    padding: 4px 7px;
+
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
+
+    background: #f1f5f9;
+
+    border: 1px solid
+      rgba(0,0,0,.06);
+  }
+
+
+  @media (max-width: 600px) {
+
+    .summary-month-box {
+      padding: 12px;
+      border-radius: 14px;
+    }
+
+
+    .summary-month-title {
+      font-size: 17px;
+    }
+
+
+    .summary-table th {
+      padding: 9px 5px;
+      font-size: 10px;
+    }
+
+
+    .summary-table td {
+      padding: 7px 4px;
+      font-size: 12px;
+    }
+
+
+    .date-number {
+      min-width: 27px;
+      height: 27px;
+      font-size: 11px;
+    }
+
+
+    .result-value {
+      min-width: 31px;
+      min-height: 26px;
+      padding: 3px 5px;
+    }
+
+  }
+
+`;
+
+
+document.head.appendChild(
+  summaryStyle
+);
+/* =================================
+   START
+================================= */
+
+setupNotifications();
+
+loadResultSummary();
+
+render();
+
+/* =================================
+   FINAL SAFETY CHECK
+================================= */
+
+window.addEventListener("load", function(){
+
+  try {
+    render();
+    renderResultSummary();
+  } catch(error) {
+    console.error(
+      "Final render error:",
+      error
+    );
+  }
+
+});
+
+/* =================================
+   END APP.JS
+================================= */
+/* =================================
+   PART 5 + 6
+   RESULT SUMMARY TABLE DESIGN
+================================= */
+
+const tableThemeStyle =
+  document.createElement("style");
+
+tableThemeStyle.id =
+  "mk-summary-table-theme";
+
+tableThemeStyle.textContent = `
+
+/* MAIN BOX */
+.summary-table-wrap {
+
+  width: 100%;
+  max-width: 100%;
+
+  margin: 18px auto;
+
+  padding: 14px;
+
+  box-sizing: border-box;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #111b31,
+      #0b1426
+    );
+
+  border: 1px solid
+    rgba(99,102,241,.65);
+
+  box-shadow:
+    0 10px 35px
+    rgba(0,0,0,.35);
+
+}
+
+
+/* MONTH TITLE */
+.summary-month-box {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  margin-bottom: 14px;
+
+  padding: 10px;
+
+  text-align: center;
+
+}
+
+
+.summary-month-icon {
+
+  font-size: 25px;
+
+}
+
+
+.summary-month-title {
+
+  color: #ffffff;
+
+  font-size: 24px;
+
+  font-weight: 900;
+
+  letter-spacing: .5px;
+
+}
+
+
+.summary-month-subtitle {
+
+  color: #aab7d4;
+
+  font-size: 11px;
+
+  margin-top: 3px;
+
+}
+
+
+/* TABLE OUTER BOX */
+.summary-table-scroll {
+
+  width: 100%;
+
+  max-width: 100%;
+
+  overflow-x: auto;
+
+  overflow-y: hidden;
+
+  border-radius: 14px;
+
+  border: 1px solid
+    rgba(100,140,200,.55);
+
+  box-sizing: border-box;
+
+  -webkit-overflow-scrolling:
+    touch;
+
+}
+
+
+/* TABLE */
+.summary-table {
+
+  width: 100%;
+
+  min-width: 0;
+
+  border-collapse: separate;
+
+  border-spacing: 0;
+
+  table-layout: fixed;
+
+  background:
+    #0c172a;
+
+}
+
+
+/* HEADER */
+.summary-table th {
+
+  height: 48px;
+
+  padding: 6px 3px;
+
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      180deg,
+      #243b63,
+      #172a49
+    );
+
+  color: #f8fafc;
+
+  font-size: 13px;
+
+  font-weight: 900;
+
+  text-align: center;
+
+  white-space: nowrap;
+
+  border-right:
+    1px solid
+    rgba(148,163,184,.35);
+
+  border-bottom:
+    1px solid
+    rgba(148,163,184,.45);
+
+}
+
+
+/* FIRST HEADER */
+.summary-table th:first-child {
+
+  width: 15%;
+
+}
+
+
+/* OTHER HEADERS */
+.summary-table th:not(:first-child) {
+
+  width: 12.14%;
+
+}
+
+
+/* BODY CELLS */
+.summary-table td {
+
+  height: 54px;
+
+  padding: 5px 2px;
+
+  box-sizing: border-box;
+
+  color: #f8fafc;
+
+  font-size: 15px;
+
+  font-weight: 800;
+
+  text-align: center;
+
+  border-right:
+    1px solid
+    rgba(96,125,170,.40);
+
+  border-bottom:
+    1px solid
+    rgba(96,125,170,.40);
+
+}
+
+
+/* ROW COLORS */
+.summary-table tbody tr:nth-child(odd) td {
+
+  background:
+    linear-gradient(
+      90deg,
+      #101d32,
+      #0d192b
+    );
+
+}
+
+
+.summary-table tbody tr:nth-child(even) td {
+
+  background:
+    linear-gradient(
+      90deg,
+      #14233b,
+      #102039
+    );
+
+}
+
+
+/* DATE CELL */
+.summary-table td:first-child {
+
+  color: #ffffff;
+
+  font-weight: 900;
+
+}
+
+
+/* DATE NUMBER BOX */
+.date-number {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 34px;
+
+  height: 34px;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #8b5cf6,
+      #6d28d9
+    );
+
+  color: white;
+
+  font-size: 15px;
+
+  font-weight: 900;
+
+  box-shadow:
+    0 4px 12px
+    rgba(124,58,237,.35);
+
+}
+
+
+/* RESULT BOX */
+.result-value {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 30px;
+
+  min-height: 30px;
+
+  padding: 3px 5px;
+
+  box-sizing: border-box;
+
+  border-radius: 7px;
+
+  background:
+    rgba(255,255,255,.06);
+
+  color: #f8fafc;
+
+  font-weight: 900;
+
+}
+
+
+/* REAL RESULT */
+.summary-table td:not(:first-child)
+.result-value:not(:empty) {
+
+  color: #67e878;
+
+}
+
+
+/* MOBILE */
+@media (max-width: 600px) {
+
+  .summary-table-wrap {
+
+    padding: 8px;
+
+    margin: 12px 0;
+
+    border-radius: 15px;
 
   }
 
 
-  return new Date(
-    Number(y),
-    Number(m)-1,
-    1
-  )
-  .toLocaleString(
-    "en-US",
-    {
-      month:"long",
-      year:"numeric"
-    }
-  );
+  .summary-month-box {
+
+    margin-bottom: 9px;
+
+    padding: 7px;
+
+  }
+
+
+  .summary-month-icon {
+
+    font-size: 20px;
+
+  }
+
+
+  .summary-month-title {
+
+    font-size: 19px;
+
+  }
+
+
+  .summary-month-subtitle {
+
+    font-size: 9px;
+
+  }
+
+
+  .summary-table th {
+
+    height: 40px;
+
+    padding: 3px 1px;
+
+    font-size: 10px;
+
+  }
+
+
+  .summary-table td {
+
+    height: 45px;
+
+    padding: 3px 1px;
+
+    font-size: 12px;
+
+  }
+
+
+  .date-number {
+
+    width: 27px;
+
+    height: 27px;
+
+    border-radius: 7px;
+
+    font-size: 12px;
+
+  }
+
+
+  .result-value {
+
+    min-width: 25px;
+
+    min-height: 25px;
+
+    padding: 2px;
+
+    border-radius: 6px;
+
+    font-size: 11px;
+
+  }
 
 }
 
 
-async function archiveOldDayResults(){
+/* VERY SMALL PHONES */
+@media (max-width: 380px) {
 
-  const today =
-    dateKey();
+  .summary-table-wrap {
 
+    padding: 5px;
 
-  if(!data.archiveDate){
-
-    data.archiveDate =
-      today;
+  }
 
 
-    try{
+  .summary-table th {
 
-      await setDoc(
-        siteRef,
-        data
-      );
+    font-size: 9px;
+
+  }
+
+
+  .summary-table td {
+
+    font-size: 11px;
+
+  }
+
+
+  .date-number {
+
+    width: 24px;
+
+    height: 24px;
+
+    font-size: 11px;
+
+  }
+
+
+  .result-value {
+
+    min-width: 22px;
+
+    min-height: 22px;
+
+    font-size: 10px;
+
+  }
+
+}
+
+`;
+
+
+/* OLD THEME HO TO REMOVE KARO */
+const oldTheme =
+  document.getElementById(
+    "mk-summary-table-theme"
+  );
+
+if (oldTheme) {
+  oldTheme.remove();
+}
+
+
+/* NEW THEME ADD */
+document.head.appendChild(
+  tableThemeStyle
+);
+
+
+/* =================================
+   FORCE TABLE REFRESH
+================================= */
+
+setTimeout(
+  function () {
+
+    try {
+
+      renderResultSummary();
 
     }
 
-    catch(error){
+    catch (error) {
 
       console.error(
-        "Archive date save error:",
+        "Table theme refresh error:",
         error
       );
 
     }
 
-    return;
-
-  }
-
-
-  if(
-    data.archiveDate === today
-  ){
-
-    return;
-
-  }
-
-
-  const oldDate =
-    data.archiveDate;
-
-
-  const oldLive =
-    Array.isArray(data.live)
-      ? data.live
-      : [];
-
-
-  if(!data.records){
-
-    data.records =
-      {};
-
-  }
-
-
-  const month =
-    monthKey(oldDate);
-
-
-  if(
-    !Array.isArray(
-      data.records[month]
-    )
-  ){
-
-    data.records[month] =
-      [];
-
-  }
-
-
-  oldLive.forEach(
-    item => {
-
-      data.records[month].push([
-
-        displayDate(oldDate),
-
-        "Published",
-
-        `${item.name || ""}${
-          item.value
-            ? " — " +
-              item.value
-            : ""
-        }`
-
-      ]);
-
-    }
-  );
-
-
-  data.live =
-    [];
-
-  data.archiveDate =
-    today;
-
-
-  try{
-
-    await setDoc(
-      siteRef,
-      data
-    );
-
-  }
-
-  catch(error){
-
-    console.error(
-      "Auto archive error:",
-      error
-    );
-
-  }
-
-}
+  },
+  100
+);
 
 
 /* =================================
-   RENDER
+   END PART 5 + 6
+================================= */
+/* =================================
+   PART 7 + 8
+   FINAL MOBILE TABLE FIX
 ================================= */
 
-function render(){
+(function () {
 
-  cards(
-    "live",
-    data.live
-  );
+  const fixStyle =
+    document.createElement("style");
 
+  fixStyle.id =
+    "mk-final-table-fix";
 
-  cards(
-    "next",
-    data.next
-  );
+  fixStyle.textContent = `
 
+    #todayYesterdayResults {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
 
-  const displayedResults = [
+    #todayYesterdayResults .summary-table-wrap {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
 
-    ...(data.live || []),
-    ...(data.next || [])
+    #todayYesterdayResults
+    .summary-table-scroll {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
 
-  ];
+    #todayYesterdayResults
+    .summary-table {
+      width: 100%;
+      max-width: 100%;
+      table-layout: fixed;
+    }
 
+    #todayYesterdayResults
+    .summary-table th,
+    #todayYesterdayResults
+    .summary-table td {
+      box-sizing: border-box;
+      overflow: hidden;
+    }
 
-  displayedResults.forEach(
-    result =>
-      countView(result)
-  );
+    #todayYesterdayResults
+    .summary-table th:first-child,
+    #todayYesterdayResults
+    .summary-table td:first-child {
+      width: 15%;
+    }
 
+    #todayYesterdayResults
+    .summary-table th:not(:first-child),
+    #todayYesterdayResults
+    .summary-table td:not(:first-child) {
+      width: 12.14%;
+    }
 
-  listenToViewCounts(
-    displayedResults
-  );
+    @media (max-width: 600px) {
 
-
-  updateVerifiedStatus();
-
-  updateLastUpdated();
-
-  renderResultSummary();
-
-
-  const month =
-    document.getElementById(
-      "month"
-    );
-
-
-  if(month){
-
-    const current =
-      month.value;
-
-
-    month.innerHTML =
-      "";
-
-
-    Object.keys(
-      data.records || {}
-    )
-    .sort()
-    .reverse()
-    .forEach(
-      k => {
-
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          k;
-
-        option.textContent =
-          k;
-
-        month.appendChild(
-          option
-        );
-
+      #todayYesterdayResults
+      .summary-table-wrap {
+        padding: 6px;
+        border-radius: 14px;
       }
-    );
 
+      #todayYesterdayResults
+      .summary-table th {
+        font-size: 9px;
+        padding: 4px 1px;
+        height: 38px;
+      }
 
-    if(
-      [...month.options]
-        .some(
-          option =>
-            option.value ===
-            current
-        )
-    ){
+      #todayYesterdayResults
+      .summary-table td {
+        font-size: 11px;
+        padding: 3px 1px;
+        height: 43px;
+      }
 
-      month.value =
-        current;
+      #todayYesterdayResults
+      .date-number {
+        width: 25px;
+        height: 25px;
+        font-size: 11px;
+      }
+
+      #todayYesterdayResults
+      .result-value {
+        min-width: 23px;
+        min-height: 23px;
+        padding: 2px;
+        font-size: 10px;
+      }
 
     }
-
-
-    showRecords();
-
-  }
-
-}
-
-
-/* =================================
-   TODAY
-================================= */
-
-const today =
-  document.getElementById(
-    "today"
-  );
-
-
-if(today){
-
-  today.textContent =
-    new Date()
-      .toLocaleDateString(
-        undefined,
-        {
-          weekday:"long",
-          year:"numeric",
-          month:"long",
-          day:"numeric"
-        }
-      );
-
-}
-
-
-/* =================================
-   YEAR
-================================= */
-
-const year =
-  document.getElementById(
-    "year"
-  );
-
-
-if(year){
-
-  year.textContent =
-    new Date()
-      .getFullYear();
-
-}
-
-
-/* =================================
-   REFRESH
-================================= */
-
-let refreshing =
-  false;
-
-
-window.refreshResults =
-function(){
-
-  if(refreshing){
-    return;
-  }
-
-
-  refreshing =
-    true;
-
-
-  const btn =
-    document.getElementById(
-      "refreshBtn"
-    );
-
-
-  if(btn){
-
-    btn.disabled =
-      true;
-
-    btn.textContent =
-      "↻ Refreshing...";
-
-  }
-
-
-  setTimeout(
-    () =>
-      location.reload(),
-    150
-  );
-
-};
-
-
-/* =================================
-   PREVIOUS RECORDS
-================================= */
-
-window.showRecords =
-function(){
-
-  const month =
-    document.getElementById(
-      "month"
-    );
-
-
-  const el =
-    document.getElementById(
-      "records"
-    );
-
-
-  if(
-    !month ||
-    !el
-  ){
-
-    return;
-
-  }
-
-
-  const rows =
-    data.records?.[
-      month.value
-    ] || [];
-
-
-  el.innerHTML = `
-
-    <table>
-
-      <thead>
-
-        <tr>
-
-          <th>
-            Date
-          </th>
-
-          <th>
-            Status
-          </th>
-
-          <th>
-            Value
-          </th>
-
-        </tr>
-
-      </thead>
-
-      <tbody>
-
-        ${
-          rows
-            .map(
-              r => `
-
-                <tr>
-
-                  <td>
-                    ${escapeHtml(r[0])}
-                  </td>
-
-                  <td>
-                    ${escapeHtml(r[1])}
-                  </td>
-
-                  <td>
-                    ${escapeHtml(r[2])}
-                  </td>
-
-                </tr>
-
-              `
-            )
-            .join("")
-        }
-
-      </tbody>
-
-    </table>
 
   `;
 
-};
-
-
-/* =================================
-   FIRESTORE SITE DATA
-================================= */
-
-onSnapshot(
-
-  siteRef,
-
-  snap => {
-
-    if(
-      snap.exists()
-    ){
-
-      data = {
-
-        ...fallback,
-        ...snap.data()
-
-      };
-
-    }
-
-
-    archiveOldDayResults()
-      .then(
-        () => {
-
-          render();
-
-        }
-      );
-
-  },
-
-  error => {
-
-    console.error(
-      "Site data error:",
-      error
-    );
-
-
-    render();
-
-  }
-
-);
-
-
-/* =================================
-   RESULT SUMMARY REAL-TIME LISTENER
-================================= */
-
-onSnapshot(
-
-  doc(
-    db,
-    "resultSummary",
-    "current"
-  ),
-
-  snap => {
-
-    if(
-      snap.exists()
-    ){
-
-      summaryData = {
-
-        month:
-          snap.data().month || "",
-
-        records:
-          snap.data().records || {}
-
-      };
-
-    }
-
-    else{
-
-      summaryData = {
-
-        month:"",
-        records:{}
-
-      };
-
-    }
-
-
-    renderResultSummary();
-
-  },
-
-  error => {
-
-    console.error(
-      "Result summary listener error:",
-      error
-    );
-
-  }
-
-);
-
-
-/* =================================
-   START
-================================= */
-
-/*
-   RESULT SUMMARY LISTENER
-   Multiple dates show hongi:
-   29
-   30
-   31
-   ...
-*/
-
-const resultSummaryRef = collection(
-  db,
-  "resultSummary"
-);
-
-onSnapshot(
-
-  resultSummaryRef,
-
-  snapshot => {
-
-    const rows = [];
-
-    snapshot.forEach(docSnap => {
-
-      const item = docSnap.data() || {};
-
-      rows.push({
-
-        date: Number(item.date || 0),
-
-        SM: item.SM || "--",
-        DB: item.DB || "--",
-        SG: item.SG || "--",
-        FB: item.FB || "--",
-        GB: item.GB || "--",
-        GL: item.GL || "--",
-        DS: item.DS || "--"
-
-      });
-
-    });
-
-
-    rows.sort(
-      (a, b) =>
-        a.date - b.date
-    );
-
-
-    const box =
-      document.getElementById(
-        "todayYesterdayResults"
-      );
-
-
-    if (!box) return;
-
-
-    const columns = [
-      "SM",
-      "DB",
-      "SG",
-      "FB",
-      "GB",
-      "GL",
-      "DS"
-    ];
-
-
-    box.innerHTML = `
-
-      <div class="summary-table-wrap">
-
-        <table class="summary-table">
-
-          <thead>
-
-            <tr>
-
-              <th>DATE</th>
-
-              ${columns
-                .map(
-                  column =>
-                    `<th>${column}</th>`
-                )
-                .join("")}
-
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            ${
-              rows.length
-
-                ? rows
-                    .map(
-                      row => `
-
-                        <tr>
-
-                          <td>
-                            ${escapeHtml(row.date)}
-                          </td>
-
-                          ${columns
-                            .map(
-                              column => `
-
-                                <td>
-                                  ${escapeHtml(
-                                    row[column]
-                                  )}
-                                </td>
-
-                              `
-                            )
-                            .join("")}
-
-                        </tr>
-
-                      `
-                    )
-                    .join("")
-
-                : `
-
-                  <tr>
-
-                    <td
-                      colspan="8"
-                      style="text-align:center;"
-                    >
-                      No results yet.
-                    </td>
-
-                  </tr>
-
-                `
-            }
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    `;
-
-  },
-
-
-  error => {
-
-    console.error(
-      "Result summary listener error:",
-      error
-    );
-
-  }
-
-);
-
-
-/* =================================
-   INITIAL RENDER
-================================= */
-
-try {
-
-  render();
-
-}
-
-catch(error) {
-
-  console.error(
-    "Initial render error:",
-    error
+  document.head.appendChild(
+    fixStyle
   );
 
+
+  /* TABLE KO DOBARA RENDER */
+  setTimeout(function () {
+
+    try {
+
+      if (
+        typeof renderResultSummary ===
+        "function"
+      ) {
+
+        renderResultSummary();
+
       }
+
+    } catch (error) {
+
+      console.error(
+        "Final table error:",
+        error
+      );
+
+    }
+
+  }, 200);
+
+
+})();
