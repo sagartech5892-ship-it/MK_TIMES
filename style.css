@@ -289,3 +289,191 @@
 #todayYesterdayResults .summary-table tbody tr:last-child td{
   border-bottom:0;
   }
+/* =========================================
+   RESULT SUMMARY — FINAL DESIGN
+========================================= */
+
+#todayYesterdayResults{
+  width:100% !important;
+  max-width:100% !important;
+  margin:18px 0 24px !important;
+  padding:14px 16px 16px !important;
+  background:#0d172b !important;
+  border:2px solid #394d78 !important;
+  border-radius:15px !important;
+  overflow:hidden !important;
+}
+
+/* MONTH */
+#todayYesterdayResults .summary-month{
+  margin:4px 0 18px !important;
+  padding:4px 0 10px !important;
+  text-align:center !important;
+  font-size:28px !important;
+  font-weight:800 !important;
+  line-height:1.2 !important;
+
+  background:linear-gradient(
+    90deg,
+    #f7a51c,
+    #e85d91,
+    #9b62e8
+  ) !important;
+
+  -webkit-background-clip:text !important;
+  background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;
+}
+
+/* CROWN */
+#todayYesterdayResults .summary-month::before{
+  content:"👑" !important;
+  display:inline-block !important;
+  margin-right:8px !important;
+  font-size:28px !important;
+  -webkit-text-fill-color:initial !important;
+}
+
+/* GOLD DECORATIVE LINE */
+#todayYesterdayResults .summary-month::after{
+  content:"" !important;
+  display:block !important;
+  width:68% !important;
+  max-width:430px !important;
+  height:2px !important;
+  margin:10px auto 0 !important;
+  background:#f5a900 !important;
+  box-shadow:
+    -120px 0 0 -0.5px #f5a900,
+     120px 0 0 -0.5px #f5a900 !important;
+}
+
+/* TABLE BOX */
+#todayYesterdayResults .summary-table-wrap{
+  width:100% !important;
+  max-width:100% !important;
+  margin:0 !important;
+  padding:0 !important;
+
+  background:#111d33 !important;
+  border:1px solid #52698f !important;
+  border-radius:13px !important;
+
+  overflow:hidden !important;
+}
+
+/* TABLE */
+#todayYesterdayResults .summary-table{
+  width:100% !important;
+  max-width:100% !important;
+
+  table-layout:fixed !important;
+  border-collapse:separate !important;
+  border-spacing:0 !important;
+
+  margin:0 !important;
+}
+
+/* HEADER */
+#todayYesterdayResults .summary-table th{
+  height:58px !important;
+  padding:7px 2px !important;
+
+  background:#1b3153 !important;
+  color:#f4f6fb !important;
+
+  border-right:1px solid #52698f !important;
+  border-bottom:1px solid #52698f !important;
+
+  text-align:center !important;
+  font-size:15px !important;
+  font-weight:800 !important;
+
+  white-space:nowrap !important;
+  overflow:hidden !important;
+}
+
+/* DATA */
+#todayYesterdayResults .summary-table td{
+  height:58px !important;
+  padding:7px 2px !important;
+
+  background:#0f1b2f !important;
+  color:#f3f5fa !important;
+
+  border-right:1px solid #334b70 !important;
+  border-bottom:1px solid #334b70 !important;
+
+  text-align:center !important;
+  font-size:16px !important;
+  font-weight:700 !important;
+
+  white-space:nowrap !important;
+  overflow:hidden !important;
+}
+
+/* DATE COLUMN */
+#todayYesterdayResults .summary-table th:first-child,
+#todayYesterdayResults .summary-table td:first-child{
+  width:22% !important;
+}
+
+/* OTHER 7 COLUMNS */
+#todayYesterdayResults .summary-table th:not(:first-child),
+#todayYesterdayResults .summary-table td:not(:first-child){
+  width:11.14% !important;
+}
+
+/* LAST COLUMN */
+#todayYesterdayResults .summary-table th:last-child,
+#todayYesterdayResults .summary-table td:last-child{
+  border-right:0 !important;
+}
+
+/* LAST ROW */
+#todayYesterdayResults .summary-table tbody tr:last-child td{
+  border-bottom:0 !important;
+}
+
+/* DATE NUMBER */
+#todayYesterdayResults .summary-table td:first-child{
+  font-size:17px !important;
+  font-weight:800 !important;
+}
+
+/* SM RESULT GREEN */
+#todayYesterdayResults .summary-table td:nth-child(2){
+  color:#69e878 !important;
+  font-weight:800 !important;
+}
+
+/* MOBILE */
+@media(max-width:520px){
+
+  #todayYesterdayResults{
+    padding:12px 10px 14px !important;
+    border-radius:14px !important;
+  }
+
+  #todayYesterdayResults .summary-month{
+    font-size:25px !important;
+    margin-bottom:16px !important;
+  }
+
+  #todayYesterdayResults .summary-month::before{
+    font-size:25px !important;
+  }
+
+  #todayYesterdayResults .summary-table th{
+    height:54px !important;
+    font-size:13px !important;
+    padding:5px 1px !important;
+  }
+
+  #todayYesterdayResults .summary-table td{
+    height:54px !important;
+    font-size:15px !important;
+    padding:5px 1px !important;
+  }
+
+  }
