@@ -16,34 +16,11 @@ import {
 
 const fallback = {
 
-  live: [
-    {
-      id:"1",
-      name:"Morning Update",
-      time:"11:50 AM",
-      value:"Published",
-      locked:false
-    },
-    {
-      id:"2",
-      name:"Afternoon Update",
-      time:"02:45 PM",
-      value:"Published",
-      locked:false
-    }
-  ],
+  live: [],
 
-  next: [
-    {
-      id:"3",
-      name:"Evening Update",
-      time:"04:15 PM",
-      value:"Scheduled",
-      locked:false
-    }
-  ],
+  next: [],
 
-  records:{}
+  records: {}
 
 };
 
@@ -928,10 +905,6 @@ function renderResultSummary(){
       );
 
 
-  /*
-     Agar koi result save nahi hai.
-  */
-
   if(!dates.length){
 
     box.innerHTML = `
@@ -982,10 +955,6 @@ function renderResultSummary(){
 
   }
 
-
-  /*
-     Pure month ki saved rows.
-  */
 
   box.innerHTML = `
 
@@ -1061,213 +1030,6 @@ function renderResultSummary(){
     </div>
 
   `;
-
-}
-
-
-/* =================================
-   AUTO ARCHIVE
-================================= */
-
-function dateKey(){
-
-  const d =
-    new Date();
-
-
-  return (
-
-    d.getFullYear() +
-    "-" +
-    String(
-      d.getMonth()+1
-    ).padStart(2,"0") +
-    "-" +
-    String(
-      d.getDate()
-    ).padStart(2,"0")
-
-  );
-
-}
-
-
-function displayDate(key){
-
-  const [y,m,d] =
-    String(key).split("-");
-
-
-  return d && m && y
-    ? `${d}-${m}-${y}`
-    : key;
-
-}
-
-
-function monthKey(key){
-
-  const [y,m] =
-    String(key).split("-");
-
-
-  if(
-    !y ||
-    !m
-  ){
-
-    return new Date()
-      .toLocaleString(
-        "en-US",
-        {
-          month:"long",
-          year:"numeric"
-        }
-      );
-
-  }
-
-
-  return new Date(
-    Number(y),
-    Number(m)-1,
-    1
-  )
-  .toLocaleString(
-    "en-US",
-    {
-      month:"long",
-      year:"numeric"
-    }
-  );
-
-}
-
-
-async function archiveOldDayResults(){
-
-  const today =
-    dateKey();
-
-
-  if(!data.archiveDate){
-
-    data.archiveDate =
-      today;
-
-
-    try{
-
-      await setDoc(
-        siteRef,
-        data
-      );
-
-    }
-
-    catch(error){
-
-      console.error(
-        "Archive date save error:",
-        error
-      );
-
-    }
-
-    return;
-
-  }
-
-
-  if(
-    data.archiveDate === today
-  ){
-
-    return;
-
-  }
-
-
-  const oldDate =
-    data.archiveDate;
-
-
-  const oldLive =
-    Array.isArray(data.live)
-      ? data.live
-      : [];
-
-
-  if(!data.records){
-
-    data.records =
-      {};
-
-  }
-
-
-  const month =
-    monthKey(oldDate);
-
-
-  if(
-    !Array.isArray(
-      data.records[month]
-    )
-  ){
-
-    data.records[month] =
-      [];
-
-  }
-
-
-  oldLive.forEach(
-    item => {
-
-      data.records[month].push([
-
-        displayDate(oldDate),
-
-        "Published",
-
-        `${item.name || ""}${
-          item.value
-            ? " — " +
-              item.value
-            : ""
-        }`
-
-      ]);
-
-    }
-  );
-
-
-  data.live =
-    [];
-
-  data.archiveDate =
-    today;
-
-
-  try{
-
-    await setDoc(
-      siteRef,
-      data
-    );
-
-  }
-
-  catch(error){
-
-    console.error(
-      "Auto archive error:",
-      error
-    );
-
-  }
 
 }
 
@@ -1592,16 +1354,31 @@ onSnapshot(
       };
 
     }
+    else{
+
+      data = {
+        ...fallback
+      };
+
+    }
 
 
-    archiveOldDayResults()
-      .then(
-        () => {
+    /*
+      IMPORTANT:
 
-          render();
+      Yahan pehle archiveOldDayResults()
+      call hota tha.
 
-        }
-      );
+      Ab usse hata diya gaya hai.
+
+      Isliye LIVE/NEXT result time ke baad
+      automatically delete/archive nahi hoga.
+
+      Result tabhi change hoga jab Admin khud
+      Firebase/site data ko change karega.
+    */
+
+    render();
 
   },
 
@@ -1679,21 +1456,14 @@ onSnapshot(
 
 
 /* =================================
-   START
+   NOTIFICATION START
 ================================= */
-window.addEventListener("load", function(){
 
-  try{
-    setupNotifications();
-    loadResultSummary();
-    render();
-    renderResultSummary();
-  }
-  catch(error){
-    console.error(
-      "Final render error:",
-      error
-    );
-  }
+setupNotifications();
 
-});
+
+/* =================================
+   RESULT SUMMARY START
+================================= */
+
+loadResultSummary();
