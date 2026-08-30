@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   runTransaction,
+  setDoc,
   onSnapshot as firestoreOnSnapshot
 } from "./firebase.js";
 
@@ -1679,4 +1680,4 @@ onSnapshot(
 
 /* =================================
    START
-========================
+================================= */
