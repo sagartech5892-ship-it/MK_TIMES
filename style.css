@@ -2,14 +2,27 @@
   box-sizing:border-box;
 }
 
+html,
 body{
   margin:0;
+  padding:0;
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+body{
   background:#10182c;
   color:#f3f5fa;
   font-family:Arial,Helvetica,sans-serif;
 }
 
+/* =========================
+   TOP
+========================= */
+
 .top{
+  width:100%;
   max-width:980px;
   margin:auto;
   padding:22px 18px;
@@ -39,8 +52,13 @@ body{
   border-radius:9px;
 }
 
+/* =========================
+   MAIN
+========================= */
+
 .hero,
 main{
+  width:100%;
   max-width:980px;
   margin:auto;
 }
@@ -59,6 +77,7 @@ main{
 }
 
 .section{
+  width:100%;
   padding:10px 18px 18px;
 }
 
@@ -73,6 +92,10 @@ main{
   font-weight:800;
   letter-spacing:1px;
 }
+
+/* =========================
+   CARDS
+========================= */
 
 .cards{
   display:grid;
@@ -109,100 +132,9 @@ main{
   font-weight:700;
 }
 
-.record-tools{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:12px;
-}
-
-.record-tools select,
-.record-tools button,
-.form input,
-.form select,
-.form button{
-  padding:12px;
-  border-radius:8px;
-  border:1px solid #344563;
-  background:#18253d;
-  color:#fff;
-}
-
-.record-tools button,
-.form button{
-  background:#f7b51d;
-  color:#111;
-  font-weight:800;
-}
-
-.records{
-  overflow:auto;
-}
-
-.records table{
-  width:100%;
-  border-collapse:collapse;
-  background:#18253d;
-}
-
-.records th,
-.records td{
-  padding:11px;
-  border:1px solid #33415b;
-  text-align:center;
-}
-
-.records th{
-  background:#f7b51d;
-  color:#111;
-}
-
-.notes{
-  margin:10px 18px 25px;
-  padding:18px;
-  border:1px solid #357eea;
-  border-radius:12px;
-  background:#18253d;
-}
-
-.notes h2{
-  margin-top:0;
-  color:#67aaff;
-}
-
-.notes li{
-  margin:10px 0;
-  color:#d9deea;
-}
-
-.form{
-  display:grid;
-  gap:10px;
-}
-
-.form input,
-.form select,
-.form button{
-  width:100%;
-  font-size:16px;
-}
-
-footer{
-  text-align:center;
-  color:#8f9ab0;
-  padding:25px;
-  border-top:1px solid #263552;
-}
-
-@media(min-width:700px){
-  .form{
-    grid-template-columns:1fr 160px 1fr 150px;
-  }
-
-  .form button{
-    grid-column:1/-1;
-  }
-}
+/* =========================
+   ACTIONS
+========================= */
 
 .actions{
   display:flex;
@@ -237,6 +169,10 @@ footer{
   align-items:flex-start;
 }
 
+/* =========================
+   SECTION HEAD
+========================= */
+
 .section-head{
   display:flex;
   align-items:center;
@@ -265,193 +201,452 @@ footer{
   cursor:wait;
 }
 
+/* =========================
+   RECORD TOOLS
+========================= */
 
-/* =====================================================
-   RESULT SUMMARY — FINAL DESIGN
-   ===================================================== */
-
-#todayYesterdayResults{
-  width:100%;
-  max-width:100%;
-  margin:18px 0 24px;
-  padding:14px 16px 16px;
-  background:#0d172b;
-  border:2px solid #394d78;
-  border-radius:15px;
-  overflow:hidden;
+.record-tools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
 }
 
+.record-tools select,
+.record-tools button,
+.form input,
+.form select,
+.form button{
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #344563;
+  background:#18253d;
+  color:#fff;
+}
 
-/* MONTH TITLE */
+.record-tools button,
+.form button{
+  background:#f7b51d;
+  color:#111;
+  font-weight:800;
+}
+
+/* =========================
+   RECORD TABLE
+========================= */
+
+.records{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+.records table{
+  width:100%;
+  max-width:100%;
+  border-collapse:collapse;
+  background:#18253d;
+}
+
+.records th,
+.records td{
+  padding:11px;
+  border:1px solid #33415b;
+  text-align:center;
+}
+
+.records th{
+  background:#f7b51d;
+  color:#111;
+}
+
+/* =========================
+   NOTES
+========================= */
+
+.notes{
+  margin:10px 18px 25px;
+  padding:18px;
+  border:1px solid #357eea;
+  border-radius:12px;
+  background:#18253d;
+}
+
+.notes h2{
+  margin-top:0;
+  color:#67aaff;
+}
+
+.notes li{
+  margin:10px 0;
+  color:#d9deea;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.form{
+  display:grid;
+  gap:10px;
+}
+
+.form input,
+.form select,
+.form button{
+  width:100%;
+  font-size:16px;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer{
+  text-align:center;
+  color:#8f9ab0;
+  padding:25px;
+  border-top:1px solid #263552;
+}
+
+/* =====================================================
+   RESULT SUMMARY — COMPACT MOBILE FIT DESIGN
+===================================================== */
+
+#todayYesterdayResults{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+
+  margin:16px 0 22px !important;
+  padding:10px 6px 12px !important;
+
+  background:#0d172b !important;
+  border:2px solid #394d78 !important;
+  border-radius:14px !important;
+
+  overflow:hidden !important;
+}
+
+/* =========================
+   MONTH TITLE
+========================= */
 
 #todayYesterdayResults .summary-month{
-  margin:4px 0 18px;
-  padding:4px 0 10px;
-  text-align:center;
-  font-size:28px;
-  font-weight:800;
-  line-height:1.2;
-  letter-spacing:.5px;
+  margin:2px 0 12px !important;
+  padding:3px 0 7px !important;
+
+  text-align:center !important;
+
+  font-size:24px !important;
+  font-weight:800 !important;
+  line-height:1.2 !important;
 
   background:linear-gradient(
     90deg,
     #f7a51c,
     #e85d91,
     #9b62e8
-  );
+  ) !important;
 
-  -webkit-background-clip:text;
-  background-clip:text;
-  -webkit-text-fill-color:transparent;
+  -webkit-background-clip:text !important;
+  background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;
 }
-
 
 /* CROWN */
 
 #todayYesterdayResults .summary-month::before{
-  content:"👑";
-  display:inline-block;
-  margin-right:8px;
-  font-size:28px;
-  -webkit-text-fill-color:initial;
+  content:"👑" !important;
+  display:inline-block !important;
+  margin-right:6px !important;
+  font-size:22px !important;
+  -webkit-text-fill-color:initial !important;
 }
 
-
-/* GOLD DECORATIVE LINE */
+/* GOLD LINE */
 
 #todayYesterdayResults .summary-month::after{
-  content:"";
-  display:block;
-  width:68%;
-  max-width:430px;
-  height:2px;
-  margin:10px auto 0;
-  background:#f5a900;
-  border-radius:10px;
+  content:"" !important;
+  display:block !important;
+
+  width:58% !important;
+  max-width:300px !important;
+
+  height:2px !important;
+  margin:7px auto 0 !important;
+
+  background:#f5a900 !important;
+  border-radius:10px !important;
 }
 
-
-/* TABLE OUTER BOX */
+/* =========================
+   TABLE OUTER BOX
+========================= */
 
 #todayYesterdayResults .summary-table-wrap{
-  width:100%;
-  max-width:100%;
-  margin:0;
-  padding:0;
-  overflow:hidden;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
 
-  background:#111d33;
-  border:1px solid #52698f;
-  border-radius:13px;
+  margin:0 !important;
+  padding:0 !important;
+
+  background:#111d33 !important;
+
+  border:1px solid #52698f !important;
+  border-radius:10px !important;
+
+  overflow:hidden !important;
 }
 
-
-/* TABLE */
+/* =========================
+   TABLE
+========================= */
 
 #todayYesterdayResults .summary-table{
-  width:100%;
-  max-width:100%;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
 
-  table-layout:fixed;
-  border-collapse:separate;
-  border-spacing:0;
+  table-layout:fixed !important;
 
-  margin:0;
+  border-collapse:collapse !important;
+  border-spacing:0 !important;
+
+  margin:0 !important;
+  padding:0 !important;
 }
 
-
-/* HEADER */
+/* =========================
+   HEADER
+========================= */
 
 #todayYesterdayResults .summary-table th{
-  height:58px;
-  padding:7px 2px;
+  height:42px !important;
 
-  background:#1b3153;
-  color:#f4f6fb;
+  padding:3px 1px !important;
 
-  border-right:1px solid #52698f;
-  border-bottom:1px solid #52698f;
+  background:#1b3153 !important;
+  color:#f4f6fb !important;
 
-  text-align:center;
-  font-size:15px;
-  font-weight:800;
+  border-right:1px solid #52698f !important;
+  border-bottom:1px solid #52698f !important;
 
-  white-space:nowrap;
-  overflow:hidden;
+  text-align:center !important;
+
+  font-size:11px !important;
+  font-weight:800 !important;
+
+  white-space:nowrap !important;
+  overflow:hidden !important;
+
+  box-sizing:border-box !important;
 }
 
-
-/* DATA CELLS */
+/* =========================
+   DATA CELLS
+========================= */
 
 #todayYesterdayResults .summary-table td{
-  height:58px;
-  padding:7px 2px;
+  height:38px !important;
 
-  background:#0f1b2f;
-  color:#f3f5fa;
+  padding:3px 1px !important;
 
-  border-right:1px solid #334b70;
-  border-bottom:1px solid #334b70;
+  background:#0f1b2f !important;
+  color:#f3f5fa !important;
 
-  text-align:center;
-  font-size:16px;
-  font-weight:700;
+  border-right:1px solid #334b70 !important;
+  border-bottom:1px solid #334b70 !important;
 
-  white-space:nowrap;
-  overflow:hidden;
+  text-align:center !important;
+
+  font-size:13px !important;
+  font-weight:700 !important;
+
+  white-space:nowrap !important;
+  overflow:hidden !important;
+
+  box-sizing:border-box !important;
 }
 
-
-/* DATE COLUMN */
+/* =========================
+   DATE COLUMN
+========================= */
 
 #todayYesterdayResults .summary-table th:first-child,
 #todayYesterdayResults .summary-table td:first-child{
-  width:22%;
+  width:20% !important;
 }
-
 
 /* OTHER 7 COLUMNS */
 
 #todayYesterdayResults .summary-table th:not(:first-child),
 #todayYesterdayResults .summary-table td:not(:first-child){
-  width:11.142857%;
+  width:11.4285% !important;
 }
 
+/* =========================
+   DATE NUMBER GREEN
+========================= */
 
-/* LAST COLUMN */
+#todayYesterdayResults .summary-table td:first-child{
+  color:#69e878 !important;
+  font-size:14px !important;
+  font-weight:800 !important;
+}
+
+/* =========================
+   PURPLE CALENDAR ICON
+========================= */
+
+#todayYesterdayResults .summary-table td:first-child::before{
+  content:"📅" !important;
+
+  display:inline-block !important;
+
+  margin-right:4px !important;
+
+  font-size:14px !important;
+
+  vertical-align:-1px !important;
+
+  filter:hue-rotate(245deg) saturate(2) !important;
+}
+
+/* =========================
+   SM WHITE
+========================= */
+
+#todayYesterdayResults .summary-table td:nth-child(2){
+  color:#f3f5fa !important;
+  font-weight:800 !important;
+}
+
+/* =========================
+   OTHER RESULTS
+========================= */
+
+#todayYesterdayResults .summary-table td:nth-child(n+3){
+  color:#f3f5fa !important;
+}
+
+/* =========================
+   LAST COLUMN
+========================= */
 
 #todayYesterdayResults .summary-table th:last-child,
 #todayYesterdayResults .summary-table td:last-child{
-  border-right:0;
+  border-right:0 !important;
 }
 
-
-/* LAST ROW */
+/* =========================
+   LAST ROW
+========================= */
 
 #todayYesterdayResults .summary-table tbody tr:last-child td{
-  border-bottom:0;
+  border-bottom:0 !important;
 }
 
-
-/* DATE NUMBER */
-
-#todayYesterdayResults .summary-table td:first-child{
-  font-size:17px;
-  font-weight:800;
-}
-
-
-/* SM RESULT GREEN */
-
-#todayYesterdayResults .summary-table td:nth-child(2){
-  color:#69e878;
-  font-weight:800;
-}
-
-
-/* =====================================================
+/* =========================
    MOBILE
-   ===================================================== */
+========================= */
+
+@media(max-width:520px){
+
+  #todayYesterdayResults{
+    width:100% !important;
+    max-width:100% !important;
+    margin:14px 0 20px !important;
+    padding:9px 5px 10px !important;
+    border-radius:13px !important;
+  }
+
+  #todayYesterdayResults .summary-month{
+    font-size:22px !important;
+    margin-bottom:10px !important;
+  }
+
+  #todayYesterdayResults .summary-month::before{
+    font-size:21px !important;
+    margin-right:5px !important;
+  }
+
+  #todayYesterdayResults .summary-table{
+    width:100% !important;
+    max-width:100% !important;
+  }
+
+  #todayYesterdayResults .summary-table th{
+    height:40px !important;
+    padding:2px 1px !important;
+    font-size:10px !important;
+  }
+
+  #todayYesterdayResults .summary-table td{
+    height:36px !important;
+    padding:2px 1px !important;
+    font-size:12px !important;
+  }
+
+  #todayYesterdayResults .summary-table td:first-child{
+    font-size:13px !important;
+  }
+
+  #todayYesterdayResults .summary-table td:first-child::before{
+    font-size:13px !important;
+    margin-right:3px !important;
+  }
+}
+
+/* =========================
+   VERY SMALL PHONES
+========================= */
+
+@media(max-width:380px){
+
+  #todayYesterdayResults{
+    padding-left:3px !important;
+    padding-right:3px !important;
+  }
+
+  #todayYesterdayResults .summary-table th{
+    font-size:9px !important;
+  }
+
+  #todayYesterdayResults .summary-table td{
+    font-size:11px !important;
+  }
+
+  #todayYesterdayResults .summary-table td:first-child{
+    font-size:12px !important;
+  }
+
+  #todayYesterdayResults .summary-table td:first-child::before{
+    font-size:12px !important;
+    margin-right:2px !important;
+  }
+}
+
+/* =========================
+   DESKTOP FORM
+========================= */
+
+@media(min-width:700px){
+
+  .form{
+    grid-template-columns:1fr 160px 1fr 150px;
+  }
+
+  .form button{
+    grid-column:1/-1;
+  }
+
+}
+
+/* =========================
+   SMALL SCREEN SECTION
+========================= */
 
 @media(max-width:520px){
 
@@ -464,55 +659,26 @@ footer{
     font-size:14px;
   }
 
-  #todayYesterdayResults{
-    width:100%;
-    margin:18px 0 24px;
-    padding:12px 10px 14px;
-    border-radius:14px;
+  .top{
+    padding:18px 12px;
   }
 
-  #todayYesterdayResults .summary-month{
-    font-size:25px;
-    margin-bottom:16px;
+  .top h1{
+    font-size:23px;
   }
 
-  #todayYesterdayResults .summary-month::before{
-    font-size:25px;
-  }
-
-  #todayYesterdayResults .summary-table th{
-    height:54px;
-    padding:5px 1px;
+  .admin-link{
+    padding:7px 9px;
     font-size:13px;
   }
 
-  #todayYesterdayResults .summary-table td{
-    height:54px;
-    padding:5px 1px;
-    font-size:15px;
+  .hero{
+    padding:20px 12px 6px;
   }
 
-  #todayYesterdayResults .summary-table td:first-child{
-    font-size:16px;
+  .section{
+    padding-left:12px;
+    padding-right:12px;
   }
-  }
-/* PURPLE CALENDAR ICON BEFORE DATE */
-#todayYesterdayResults .summary-table td:first-child::before{
-  content:"📅";
-  display:inline-block;
-  margin-right:8px;
-  font-size:18px;
-  filter:none;
-}
 
-/* Purple look */
-#todayYesterdayResults .summary-table td:first-child{
-  color:#f3f5fa !important;
-}
-
-@media(max-width:520px){
-  #todayYesterdayResults .summary-table td:first-child::before{
-    font-size:16px;
-    margin-right:5px;
   }
-                                                   }
