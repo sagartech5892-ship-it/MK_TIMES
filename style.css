@@ -751,3 +751,48 @@ footer{
   justify-content: center;
   white-space: nowrap;
 }
+/* ADMIN + STAFF BUTTONS */
+
+.login-buttons{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+}
+
+.login-buttons a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:102px;
+  height:50px;
+  padding:0 18px;
+  background:#10182c;
+  color:#f3f5fa !important;
+  border:2px solid #f7b51d;
+  border-radius:18px;
+  text-decoration:none;
+  font-size:18px;
+  font-weight:600;
+  box-sizing:border-box;
+}
+
+.login-buttons a:hover{
+  background:#18253d;
+}
+
+@media(max-width:600px){
+
+  .login-buttons{
+    gap:8px;
+  }
+
+  .login-buttons a{
+    min-width:88px;
+    height:46px;
+    padding:0 14px;
+    font-size:17px;
+    border-radius:16px;
+  }
+
+}
