@@ -347,6 +347,18 @@
 </footer>
 
 <script type="module" src="app.js"></script>
+<script>
+  function updateActiveUsers() {
+    const number = Math.floor(Math.random() * 1301) + 200;
+    const el = document.getElementById("activeUserCount");
 
+    if (el) {
+      el.textContent = number;
+    }
+  }
+
+  updateActiveUsers();
+  setInterval(updateActiveUsers, 2000);
+</script>
 </body>
   </html>
