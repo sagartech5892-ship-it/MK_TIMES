@@ -891,8 +891,7 @@ onAuthStateChanged(auth, function(user) {
 /* ================= INITIAL RENDER ================= */
 
 render();
-async function saveResultSummary(){
-
+window.saveResultSummary = async function(){
   const user = auth.currentUser;
 // ADMIN ONLY
 const ADMIN_EMAIL = "sagartech5892@gmail.com";
@@ -932,7 +931,7 @@ if (!user || user.email !== ADMIN_EMAIL) {
     alert("Update failed ❌");
 
   }
-  }
+  };
 </script>
 
 </body>
