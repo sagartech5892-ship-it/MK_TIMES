@@ -496,3 +496,23 @@ footer{
     font-size:16px;
   }
   }
+/* PURPLE CALENDAR ICON BEFORE DATE */
+#todayYesterdayResults .summary-table td:first-child::before{
+  content:"📅";
+  display:inline-block;
+  margin-right:8px;
+  font-size:18px;
+  filter:none;
+}
+
+/* Purple look */
+#todayYesterdayResults .summary-table td:first-child{
+  color:#f3f5fa !important;
+}
+
+@media(max-width:520px){
+  #todayYesterdayResults .summary-table td:first-child::before{
+    font-size:16px;
+    margin-right:5px;
+  }
+                                                   }
