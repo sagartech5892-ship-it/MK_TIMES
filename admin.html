@@ -17,7 +17,10 @@
 
   <a class="admin-link" href="index.html">Public Site</a>
 </header>
+
+
 <!-- ================= RESULT SUMMARY CONTROL ================= -->
+
 <section class="section">
 
   <div class="section-title">
@@ -27,33 +30,67 @@
   <div class="result-editor">
 
     <label>DATE</label>
-    <input id="summaryDate" type="number" min="1" max="31">
+
+    <input
+      id="summaryDate"
+      type="number"
+      min="1"
+      max="31"
+      placeholder="Example: 29"
+    >
 
     <div class="summary-input-grid">
 
-      <div><label>SM</label><input id="summarySM" type="text"></div>
-      <div><label>DB</label><input id="summaryDB" type="text"></div>
+      <div>
+        <label>SM</label>
+        <input id="summarySM" type="text">
+      </div>
 
-      <div><label>SG</label><input id="summarySG" type="text"></div>
-      <div><label>FB</label><input id="summaryFB" type="text"></div>
+      <div>
+        <label>DB</label>
+        <input id="summaryDB" type="text">
+      </div>
 
-      <div><label>GB</label><input id="summaryGB" type="text"></div>
-      <div><label>GL</label><input id="summaryGL" type="text"></div>
+      <div>
+        <label>SG</label>
+        <input id="summarySG" type="text">
+      </div>
 
-      <div><label>DS</label><input id="summaryDS" type="text"></div>
+      <div>
+        <label>FB</label>
+        <input id="summaryFB" type="text">
+      </div>
+
+      <div>
+        <label>GB</label>
+        <input id="summaryGB" type="text">
+      </div>
+
+      <div>
+        <label>GL</label>
+        <input id="summaryGL" type="text">
+      </div>
+
+      <div>
+        <label>DS</label>
+        <input id="summaryDS" type="text">
+      </div>
 
     </div>
 
     <button
       type="button"
       id="saveSummaryBtn"
-      onclick="saveResultSummary()">
+      onclick="saveResultSummary()"
+    >
       💾 SAVE RESULT TABLE
     </button>
 
   </div>
 
-  </section>
+</section>
+
+
 <main>
 
 <!-- ================= LOGIN ================= -->
@@ -80,7 +117,9 @@
       required
     >
 
-    <button type="submit">Login</button>
+    <button type="submit">
+      Login
+    </button>
 
     <p id="loginMsg"></p>
 
@@ -201,75 +240,78 @@
     ></div>
 
   </section>
-<!-- ================= PREVIOUS RECORDS MANAGER ================= -->
 
-<section class="section">
 
-  <div class="section-title">
-    <span>PREVIOUS RECORDS</span>
-  </div>
+  <!-- ================= PREVIOUS RECORDS MANAGER ================= -->
 
-  <form id="recordForm" class="form">
+  <section class="section">
 
-    <input
-      type="hidden"
-      id="recordEditIndex"
-      value=""
-    >
+    <div class="section-title">
+      <span>PREVIOUS RECORDS</span>
+    </div>
 
-    <input
-      id="recordMonth"
-      type="text"
-      placeholder="Month (example: August 2026)"
-      required
-    >
+    <form id="recordForm" class="form">
 
-    <input
-      id="recordDate"
-      type="date"
-      required
-    >
+      <input
+        type="hidden"
+        id="recordEditIndex"
+        value=""
+      >
 
-    <input
-      id="recordStatus"
-      type="text"
-      placeholder="Status (example: Published)"
-      required
-    >
+      <input
+        id="recordMonth"
+        type="text"
+        placeholder="Month (example: August 2026)"
+        required
+      >
 
-    <input
-      id="recordValue"
-      type="text"
-      placeholder="Result / Value"
-      required
-    >
+      <input
+        id="recordDate"
+        type="date"
+        required
+      >
 
-    <button
-      type="submit"
-      id="recordSaveBtn"
-    >
-      Add Record
-    </button>
+      <input
+        id="recordStatus"
+        type="text"
+        placeholder="Status (example: Published)"
+        required
+      >
 
-    <button
-      type="button"
-      id="recordCancelBtn"
-      class="secondary"
-      hidden
-    >
-      Cancel Edit
-    </button>
+      <input
+        id="recordValue"
+        type="text"
+        placeholder="Result / Value"
+        required
+      >
 
-  </form>
+      <button
+        type="submit"
+        id="recordSaveBtn"
+      >
+        Add Record
+      </button>
 
-  <div
-    id="adminRecords"
-    class="records"
-  ></div>
+      <button
+        type="button"
+        id="recordCancelBtn"
+        class="secondary"
+        hidden
+      >
+        Cancel Edit
+      </button>
 
-  <p id="recordMsg"></p>
+    </form>
+
+    <div
+      id="adminRecords"
+      class="records"
+    ></div>
+
+    <p id="recordMsg"></p>
 
   </section>
+
 
   <!-- ================= CHANGE PASSWORD ================= -->
 
@@ -322,6 +364,7 @@ import {
   auth,
   db,
   doc,
+  getDoc,
   siteRef,
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -330,6 +373,7 @@ import {
   onSnapshot,
   setDoc
 } from "./firebase.js";
+
 
 /* ================= DATA ================= */
 
@@ -340,61 +384,82 @@ let data = {
 };
 
 
+/* ================= ADMIN EMAIL ================= */
+
+const ADMIN_EMAIL =
+  "sagartech5892@gmail.com";
+
+
 /* ================= SHORT FUNCTION ================= */
 
-const $ = (id) => document.getElementById(id);
+const $ =
+  id => document.getElementById(id);
 
 
 /* ================= HTML ESCAPE ================= */
 
-function esc(value) {
+function esc(value){
 
   return String(value ?? "")
-    .replace(/[&<>"']/g, function (m) {
+    .replace(
+      /[&<>"']/g,
+      function(m){
 
-      return {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[m];
+        return {
+          "&":"&amp;",
+          "<":"&lt;",
+          ">":"&gt;",
+          '"':"&quot;",
+          "'":"&#039;"
+        }[m];
 
-    });
+      }
+    );
 
 }
 
 
 /* ================= 24 HOUR TIME ================= */
 
-function to24(time) {
+function to24(time){
 
-  const m = String(time).match(
-    /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
-  );
+  const m =
+    String(time).match(
+      /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+    );
 
-  if (!m) return "";
+  if(!m) return "";
 
-  let hour = Number(m[1]);
+  let hour =
+    Number(m[1]);
 
-  const minute = m[2];
+  const minute =
+    m[2];
 
-  const ampm = m[3].toUpperCase();
+  const ampm =
+    m[3].toUpperCase();
 
 
-  if (ampm === "PM" && hour < 12) {
+  if(
+    ampm === "PM" &&
+    hour < 12
+  ){
     hour += 12;
   }
 
-  if (ampm === "AM" && hour === 12) {
+
+  if(
+    ampm === "AM" &&
+    hour === 12
+  ){
     hour = 0;
   }
 
 
   return (
-    String(hour).padStart(2, "0")
-    + ":"
-    + minute
+    String(hour).padStart(2,"0") +
+    ":" +
+    minute
   );
 
 }
@@ -402,27 +467,34 @@ function to24(time) {
 
 /* ================= 12 HOUR TIME ================= */
 
-function to12(time) {
+function to12(time){
 
-  if (!time) return "";
+  if(!time) return "";
 
-  const parts = time.split(":");
+  const parts =
+    time.split(":");
 
-  let hour = Number(parts[0]);
+  let hour =
+    Number(parts[0]);
 
-  const minute = parts[1];
+  const minute =
+    parts[1];
 
-  const ampm = hour >= 12 ? "PM" : "AM";
+  const ampm =
+    hour >= 12
+      ? "PM"
+      : "AM";
 
-  hour = hour % 12 || 12;
+  hour =
+    hour % 12 || 12;
 
 
   return (
-    String(hour).padStart(2, "0")
-    + ":"
-    + minute
-    + " "
-    + ampm
+    String(hour).padStart(2,"0") +
+    ":" +
+    minute +
+    " " +
+    ampm
   );
 
 }
@@ -430,85 +502,108 @@ function to12(time) {
 
 /* ================= RENDER BOXES ================= */
 
-function render() {
+function render(){
 
-  ["live", "next"].forEach(function(section) {
+  ["live","next"].forEach(
+    function(section){
 
-    const container = $(section + "Admin");
+      const container =
+        $(section + "Admin");
 
-    const boxes = data[section] || [];
+      const boxes =
+        data[section] || [];
 
 
-    if (boxes.length === 0) {
+      if(!container) return;
+
+
+      if(boxes.length === 0){
+
+        container.innerHTML =
+          '<p class="empty">No boxes.</p>';
+
+        return;
+
+      }
+
 
       container.innerHTML =
-        '<p class="empty">No boxes.</p>';
+        boxes.map(
+          function(box){
 
-      return;
+            return `
+
+              <article class="card admin-card">
+
+                <div>
+
+                  <small>
+                    ${esc(box.time)}
+                  </small>
+
+                  <h3>
+                    ${esc(box.name)}
+                  </h3>
+
+                  <p>
+                    ${esc(box.value)}
+                    ${
+                      box.locked
+                        ? " • LOCKED"
+                        : ""
+                    }
+                  </p>
+
+                </div>
+
+                <div class="actions">
+
+                  <button
+                    onclick="editBox('${esc(box.id)}','${section}')"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onclick="toggleLock('${esc(box.id)}','${section}')"
+                  >
+                    ${
+                      box.locked
+                        ? "Unlock"
+                        : "Lock"
+                    }
+                  </button>
+
+                  <button
+                    onclick="deleteBox('${esc(box.id)}','${section}')"
+                    class="danger"
+                  >
+                    Delete
+                  </button>
+
+                </div>
+
+              </article>
+
+            `;
+
+          }
+        ).join("");
 
     }
-
-
-    container.innerHTML = boxes.map(function(box) {
-
-      return `
-        <article class="card admin-card">
-
-          <div>
-
-            <small>
-              ${esc(box.time)}
-            </small>
-
-            <h3>
-              ${esc(box.name)}
-            </h3>
-
-            <p>
-              ${esc(box.value)}
-              ${box.locked ? " • LOCKED" : ""}
-            </p>
-
-          </div>
-
-          <div class="actions">
-
-            <button
-              onclick="editBox('${box.id}','${section}')"
-            >
-              Edit
-            </button>
-
-            <button
-              onclick="toggleLock('${box.id}','${section}')"
-            >
-              ${box.locked ? "Unlock" : "Lock"}
-            </button>
-
-            <button
-              onclick="deleteBox('${box.id}','${section}')"
-              class="danger"
-            >
-              Delete
-            </button>
-
-          </div>
-
-        </article>
-      `;
-
-    }).join("");
-
-  });
+  );
 
 }
 
 
-/* ================= SAVE FIREBASE ================= */
+/* ================= SAVE SITE DATA ================= */
 
-async function saveData() {
+async function saveData(){
 
-  await setDoc(siteRef, data);
+  await setDoc(
+    siteRef,
+    data
+  );
 
   render();
 
@@ -517,60 +612,74 @@ async function saveData() {
 
 /* ================= EDIT BOX ================= */
 
-window.editBox = function(id, section) {
+window.editBox =
+function(id,section){
 
-  const boxes = data[section] || [];
-
-  const box = boxes.find(function(item) {
-
-    return item.id === id;
-
-  });
+  const boxes =
+    data[section] || [];
 
 
-  if (!box) return;
+  const box =
+    boxes.find(
+      item =>
+        item.id === id
+    );
 
 
-  $("editId").value = box.id;
+  if(!box) return;
 
-  $("name").value = box.name;
 
-  $("time").value = to24(box.time);
+  $("editId").value =
+    box.id;
 
-  $("value").value = box.value;
+  $("name").value =
+    box.name;
 
-  $("section").value = section;
+  $("time").value =
+    to24(box.time);
 
-  $("saveBtn").textContent = "Save Changes";
+  $("value").value =
+    box.value;
 
-  $("cancelBtn").hidden = false;
+  $("section").value =
+    section;
+
+  $("saveBtn").textContent =
+    "Save Changes";
+
+  $("cancelBtn").hidden =
+    false;
 
 
   window.scrollTo({
-    top: 0,
-    behavior: "smooth"
+    top:0,
+    behavior:"smooth"
   });
 
 };
 
 
-/* ================= LOCK / UNLOCK ================= */
+/* ================= LOCK ================= */
 
-window.toggleLock = async function(id, section) {
+window.toggleLock =
+async function(id,section){
 
-  const boxes = data[section] || [];
-
-  const box = boxes.find(function(item) {
-
-    return item.id === id;
-
-  });
+  const boxes =
+    data[section] || [];
 
 
-  if (!box) return;
+  const box =
+    boxes.find(
+      item =>
+        item.id === id
+    );
 
 
-  box.locked = !box.locked;
+  if(!box) return;
+
+
+  box.locked =
+    !box.locked;
 
 
   await saveData();
@@ -580,22 +689,26 @@ window.toggleLock = async function(id, section) {
 
 /* ================= DELETE BOX ================= */
 
-window.deleteBox = async function(id, section) {
+window.deleteBox =
+async function(id,section){
 
-  const ok = confirm(
-    "Delete this box?"
-  );
+  const ok =
+    confirm(
+      "Delete this box?"
+    );
 
 
-  if (!ok) return;
+  if(!ok) return;
 
 
   data[section] =
-    (data[section] || []).filter(function(box) {
-
-      return box.id !== id;
-
-    });
+    (
+      data[section] || []
+    )
+    .filter(
+      box =>
+        box.id !== id
+    );
 
 
   await saveData();
@@ -605,72 +718,97 @@ window.deleteBox = async function(id, section) {
 
 /* ================= RESET FORM ================= */
 
-function resetForm() {
+function resetForm(){
 
-  $("editId").value = "";
+  $("editId").value =
+    "";
 
-  $("name").value = "";
+  $("name").value =
+    "";
 
-  $("time").value = "";
+  $("time").value =
+    "";
 
-  $("value").value = "";
+  $("value").value =
+    "";
 
-  $("section").value = "live";
+  $("section").value =
+    "live";
 
-  $("saveBtn").textContent = "Add Box";
+  $("saveBtn").textContent =
+    "Add Box";
 
-  $("cancelBtn").hidden = true;
+  $("cancelBtn").hidden =
+    true;
 
 }
 
 
-/* ================= ADD / EDIT FORM ================= */
+/* ================= ADD / EDIT BOX ================= */
 
-$("boxForm").onsubmit = async function(event) {
+$("boxForm").onsubmit =
+async function(event){
 
   event.preventDefault();
 
 
-  const editId = $("editId").value;
+  const editId =
+    $("editId").value;
 
-  const section = $("section").value;
+  const section =
+    $("section").value;
 
 
   const box = {
 
-    name: $("name").value.trim(),
+    name:
+      $("name").value.trim(),
 
-    time: to12($("time").value),
+    time:
+      to12(
+        $("time").value
+      ),
 
-    value: $("value").value.trim(),
+    value:
+      $("value").value.trim(),
 
-    locked: false
+    locked:false
 
   };
 
 
-  /* ===== EDIT EXISTING BOX ===== */
+  /* EDIT */
 
-  if (editId) {
+  if(editId){
 
-    let oldBox = null;
+    let oldBox =
+      null;
 
 
-    for (const sec of ["live", "next"]) {
+    for(
+      const sec of
+      ["live","next"]
+    ){
 
       const index =
-        (data[sec] || []).findIndex(function(item) {
+        (
+          data[sec] || []
+        )
+        .findIndex(
+          item =>
+            item.id === editId
+        );
 
-          return item.id === editId;
 
-        });
+      if(index !== -1){
 
+        oldBox =
+          data[sec][index];
 
-      if (index !== -1) {
-
-        oldBox = data[sec][index];
-
-        data[sec].splice(index, 1);
+        data[sec].splice(
+          index,
+          1
+        );
 
         break;
 
@@ -679,35 +817,44 @@ $("boxForm").onsubmit = async function(event) {
     }
 
 
-    box.id = editId;
+    box.id =
+      editId;
 
-    box.locked = oldBox
-      ? !!oldBox.locked
-      : false;
-
-  }
-
-
-  /* ===== ADD NEW BOX ===== */
-
-  else {
-
-    box.id = crypto.randomUUID();
+    box.locked =
+      oldBox
+        ? !!oldBox.locked
+        : false;
 
   }
 
 
-  if (!Array.isArray(data[section])) {
+  /* ADD */
+
+  else{
+
+    box.id =
+      crypto.randomUUID();
+
+  }
+
+
+  if(
+    !Array.isArray(
+      data[section]
+    )
+  ){
 
     data[section] = [];
 
   }
 
 
-  data[section].push(box);
+  data[section].push(
+    box
+  );
 
 
-  try {
+  try{
 
     await saveData();
 
@@ -715,12 +862,12 @@ $("boxForm").onsubmit = async function(event) {
 
   }
 
-  catch (error) {
+  catch(error){
 
     console.error(error);
 
     alert(
-      "Box save nahi hua. Firebase rules/check karo."
+      "Box save nahi hua. Firebase rules check karo."
     );
 
   }
@@ -728,18 +875,287 @@ $("boxForm").onsubmit = async function(event) {
 };
 
 
-/* ================= CANCEL EDIT ================= */
+/* ================= CANCEL ================= */
 
-$("cancelBtn").onclick = function() {
+$("cancelBtn").onclick =
+function(){
 
   resetForm();
 
 };
 
 
+/* =====================================================
+   RESULT SUMMARY
+   ===================================================== */
+
+/*
+   Firebase structure:
+
+   resultSummary
+       └── current
+             ├── month: "August 2026"
+             └── records
+                   ├── 29
+                   │    ├── SM
+                   │    ├── DB
+                   │    └── ...
+                   ├── 30
+                   └── 31
+*/
+
+
+window.saveResultSummary =
+async function(){
+
+  const user =
+    auth.currentUser;
+
+
+  if(
+    !user ||
+    user.email !== ADMIN_EMAIL
+  ){
+
+    alert(
+      "Sirf Admin Result Table edit kar sakta hai."
+    );
+
+    return;
+
+  }
+
+
+  const date =
+    $("summaryDate")
+      .value
+      .trim();
+
+
+  if(!date){
+
+    alert(
+      "Date daalo."
+    );
+
+    return;
+
+  }
+
+
+  const day =
+    Number(date);
+
+
+  if(
+    !Number.isInteger(day) ||
+    day < 1 ||
+    day > 31
+  ){
+
+    alert(
+      "Date 1 se 31 ke beech honi chahiye."
+    );
+
+    return;
+
+  }
+
+
+  const now =
+    new Date();
+
+
+  const month =
+    now.toLocaleString(
+      "en-US",
+      {
+        month:"long",
+        year:"numeric"
+      }
+    );
+
+
+  const summary = {
+
+    SM:
+      $("summarySM")
+        .value
+        .trim(),
+
+    DB:
+      $("summaryDB")
+        .value
+        .trim(),
+
+    SG:
+      $("summarySG")
+        .value
+        .trim(),
+
+    FB:
+      $("summaryFB")
+        .value
+        .trim(),
+
+    GB:
+      $("summaryGB")
+        .value
+        .trim(),
+
+    GL:
+      $("summaryGL")
+        .value
+        .trim(),
+
+    DS:
+      $("summaryDS")
+        .value
+        .trim()
+
+  };
+
+
+  const resultRef =
+    doc(
+      db,
+      "resultSummary",
+      "current"
+    );
+
+
+  const btn =
+    $("saveSummaryBtn");
+
+
+  if(btn){
+
+    btn.disabled =
+      true;
+
+    btn.textContent =
+      "Saving...";
+
+  }
+
+
+  try{
+
+    const snap =
+      await getDoc(
+        resultRef
+      );
+
+
+    let oldData =
+      snap.exists()
+        ? snap.data()
+        : {};
+
+
+    let records =
+      oldData.records || {};
+
+
+    /*
+       IMPORTANT:
+       Sirf selected date update hogi.
+       Baaki dates safe rahengi.
+    */
+
+    records[String(day)] =
+      summary;
+
+
+    await setDoc(
+      resultRef,
+      {
+
+        month:
+          month,
+
+        records:
+          records,
+
+        updatedAt:
+          new Date().toISOString()
+
+      },
+      {
+        merge:true
+      }
+    );
+
+
+    alert(
+      "RESULT " +
+      day +
+      " SAVE HO GAYA ✅"
+    );
+
+
+    /*
+       Form clear.
+    */
+
+    $("summarySM").value =
+      "";
+
+    $("summaryDB").value =
+      "";
+
+    $("summarySG").value =
+      "";
+
+    $("summaryFB").value =
+      "";
+
+    $("summaryGB").value =
+      "";
+
+    $("summaryGL").value =
+      "";
+
+    $("summaryDS").value =
+      "";
+
+  }
+
+  catch(error){
+
+    console.error(
+      "Result save error:",
+      error
+    );
+
+
+    alert(
+      "Result save nahi hua ❌"
+    );
+
+  }
+
+  finally{
+
+    if(btn){
+
+      btn.disabled =
+        false;
+
+      btn.textContent =
+        "💾 SAVE RESULT TABLE";
+
+    }
+
+  }
+
+};
+
+
 /* ================= LOGIN ================= */
 
-$("loginForm").onsubmit = async function(event) {
+$("loginForm").onsubmit =
+async function(event){
 
   event.preventDefault();
 
@@ -748,7 +1164,7 @@ $("loginForm").onsubmit = async function(event) {
     "Logging in...";
 
 
-  try {
+  try{
 
     await signInWithEmailAndPassword(
       auth,
@@ -757,16 +1173,18 @@ $("loginForm").onsubmit = async function(event) {
     );
 
 
-    $("loginMsg").textContent = "";
+    $("loginMsg").textContent =
+      "";
 
   }
 
-  catch (error) {
+  catch(error){
 
     console.error(error);
 
     $("loginMsg").textContent =
-      "Login failed: " + error.message;
+      "Login failed: " +
+      error.message;
 
   }
 
@@ -775,7 +1193,8 @@ $("loginForm").onsubmit = async function(event) {
 
 /* ================= LOGOUT ================= */
 
-$("logout").onclick = async function() {
+$("logout").onclick =
+async function(){
 
   await signOut(auth);
 
@@ -784,15 +1203,17 @@ $("logout").onclick = async function() {
 
 /* ================= CHANGE PASSWORD ================= */
 
-$("pwForm").onsubmit = async function(event) {
+$("pwForm").onsubmit =
+async function(event){
 
   event.preventDefault();
 
 
-  const user = auth.currentUser;
+  const user =
+    auth.currentUser;
 
 
-  if (!user) {
+  if(!user){
 
     $("pwMsg").textContent =
       "Please login first.";
@@ -806,7 +1227,7 @@ $("pwForm").onsubmit = async function(event) {
     $("newPassword").value;
 
 
-  try {
+  try{
 
     await updatePassword(
       user,
@@ -817,11 +1238,12 @@ $("pwForm").onsubmit = async function(event) {
     $("pwMsg").textContent =
       "Password changed successfully.";
 
-    $("newPassword").value = "";
+    $("newPassword").value =
+      "";
 
   }
 
-  catch (error) {
+  catch(error){
 
     console.error(error);
 
@@ -835,104 +1257,78 @@ $("pwForm").onsubmit = async function(event) {
 
 /* ================= AUTH STATE ================= */
 
-onAuthStateChanged(auth, function(user) {
+onAuthStateChanged(
+  auth,
+  function(user){
 
-  $("loginBox").hidden = !!user;
+    $("loginBox").hidden =
+      !!user;
 
-  $("dashboard").hidden = !user;
+    $("dashboard").hidden =
+      !user;
 
 
-  if (user) {
+    if(user){
 
-    onSnapshot(
-      siteRef,
-      function(snapshot) {
+      onSnapshot(
+        siteRef,
 
-        if (snapshot.exists()) {
+        function(snapshot){
 
-          data = {
-            live: [],
-            next: [],
-            records: {},
-            ...snapshot.data()
-          };
+          if(
+            snapshot.exists()
+          ){
+
+            data = {
+
+              live:[],
+              next:[],
+              records:{},
+
+              ...snapshot.data()
+
+            };
+
+          }
+
+          else{
+
+            data = {
+
+              live:[],
+              next:[],
+              records:{}
+
+            };
+
+          }
+
+
+          render();
+
+        },
+
+        function(error){
+
+          console.error(
+            "Firebase error:",
+            error
+          );
 
         }
+      );
 
-        else {
-
-          data = {
-            live: [],
-            next: [],
-            records: {}
-          };
-
-        }
-
-
-        render();
-
-      },
-      function(error) {
-
-        console.error(
-          "Firebase error:",
-          error
-        );
-
-      }
-    );
+    }
 
   }
-
-});
+);
 
 
 /* ================= INITIAL RENDER ================= */
 
 render();
-window.saveResultSummary = async function(){
-  const user = auth.currentUser;
-// ADMIN ONLY
-const ADMIN_EMAIL = "sagartech5892@gmail.com";
 
-if (!user || user.email !== ADMIN_EMAIL) {
-  alert("Sirf Admin Result Table edit kar sakta hai.");
-  return;
-  }
-  if(!user){
-    alert("Please login first.");
-    return;
-  }
-
-  const summary = {
-    date: document.getElementById("summaryDate").value,
-    SM: document.getElementById("summarySM").value,
-    DB: document.getElementById("summaryDB").value,
-    SG: document.getElementById("summarySG").value,
-    FB: document.getElementById("summaryFB").value,
-    GB: document.getElementById("summaryGB").value,
-    GL: document.getElementById("summaryGL").value,
-    DS: document.getElementById("summaryDS").value
-  };
-
-  try {
-
-    await setDoc(
-      doc(db, "resultSummary", "current"),
-      summary
-    );
-
-    alert("RESULT TABLE UPDATED ✅");
-
-  } catch(error) {
-
-    console.error(error);
-    alert("Update failed ❌");
-
-  }
-  };
 </script>
 
 </body>
-    </html>
+  </html>
