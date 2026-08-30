@@ -1220,3 +1220,357 @@ onSnapshot(
 setupNotifications();
 
 render();
+
+/* =================================
+   TODAY / YESTERDAY RESULT SUMMARY
+   NEW FEATURE — EXISTING LOGIC SAFE
+================================= */
+
+function summaryDateKey(date){
+  return (
+    date.getFullYear() + "-" +
+    String(date.getMonth() + 1).padStart(2,"0") + "-" +
+    String(date.getDate()).padStart(2,"0")
+  );
+}
+
+function parseSummaryDate(value){
+  const text = String(value || "").trim();
+
+  if(!text) return null;
+
+  // YYYY-MM-DD
+  let m = text.match(
+    /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+  );
+
+  if(m){
+    const d = new Date(
+      Number(m[1]),
+      Number(m[2]) - 1,
+      Number(m[3])
+    );
+
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // DD/MM/YYYY
+  m = text.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+  );
+
+  if(m){
+    const d = new Date(
+      Number(m[3]),
+      Number(m[2]) - 1,
+      Number(m[1])
+    );
+
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // DD-MM-YYYY
+  m = text.match(
+    /^(\d{1,2})-(\d{1,2})-(\d{4})$/
+  );
+
+  if(m){
+    const d = new Date(
+      Number(m[3]),
+      Number(m[2]) - 1,
+      Number(m[1])
+    );
+
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // DD Mon YYYY
+  m = text.match(
+    /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/
+  );
+
+  if(m){
+    const d = new Date(
+      m[1] + " " + m[2] + " " + m[3]
+    );
+
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  return null;
+}
+
+
+function getAllPreviousRecords(){
+
+  const records = [];
+
+  const source =
+    data &&
+    data.records &&
+    typeof data.records === "object"
+      ? data.records
+      : {};
+
+  Object.keys(source).forEach(function(month){
+
+    const rows = Array.isArray(source[month])
+      ? source[month]
+      : [];
+
+    rows.forEach(function(row){
+
+      if(!Array.isArray(row)){
+        return;
+      }
+
+      const date = parseSummaryDate(row[0]);
+
+      if(!date){
+        return;
+      }
+
+      records.push({
+        date: date,
+        dateKey: summaryDateKey(date),
+        status: String(row[1] || ""),
+        value: String(row[2] || "")
+      });
+
+    });
+
+  });
+
+  return records;
+}
+
+
+function renderTodayYesterday(){
+
+  const container =
+    document.getElementById(
+      "todayYesterdayResults"
+    );
+
+  if(!container){
+    return;
+  }
+
+  const now = new Date();
+
+  const yesterdayDate =
+    new Date(now);
+
+  yesterdayDate.setDate(
+    now.getDate() - 1
+  );
+
+
+  const todayKey =
+    summaryDateKey(now);
+
+  const yesterdayKey =
+    summaryDateKey(yesterdayDate);
+
+
+  const records =
+    getAllPreviousRecords();
+
+
+  const todayRecords =
+    records.filter(function(item){
+
+      return item.dateKey === todayKey;
+
+    });
+
+
+  const yesterdayRecords =
+    records.filter(function(item){
+
+      return item.dateKey === yesterdayKey;
+
+    });
+
+
+  /*
+    If today's previous record is not available,
+    use the existing LIVE results.
+  */
+
+  if(
+    todayRecords.length === 0 &&
+    Array.isArray(data.live)
+  ){
+
+    data.live.forEach(function(item){
+
+      if(
+        item &&
+        String(item.value || "").trim()
+      ){
+
+        todayRecords.push({
+
+          value:
+            String(item.name || "") +
+            (
+              item.name
+                ? " — "
+                : ""
+            ) +
+            String(item.value || ""),
+
+          status: "LIVE"
+
+        });
+
+      }
+
+    });
+
+  }
+
+
+  function escapeText(value){
+
+    return String(value || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+
+  }
+
+
+  function createCard(
+    title,
+    date,
+    rows
+  ){
+
+    let content = "";
+
+    if(rows.length){
+
+      content =
+        rows.map(function(row){
+
+          return `
+            <div class="result-summary-value">
+              ${escapeText(row.value)}
+            </div>
+
+            ${
+              row.status
+                ? `
+                  <div class="result-summary-date">
+                    ${escapeText(row.status)}
+                  </div>
+                `
+                : ""
+            }
+          `;
+
+        }).join("");
+
+    }
+    else{
+
+      content = `
+        <div class="result-summary-empty">
+          Result not available
+        </div>
+      `;
+
+    }
+
+
+    const formattedDate =
+      date.toLocaleDateString(
+        "en-IN",
+        {
+          day:"2-digit",
+          month:"short",
+          year:"numeric"
+        }
+      );
+
+
+    return `
+      <div class="result-summary-card">
+
+        <div class="result-summary-label">
+          ${title}
+        </div>
+
+        <div class="result-summary-date">
+          ${formattedDate}
+        </div>
+
+        ${content}
+
+      </div>
+    `;
+
+  }
+
+
+  container.innerHTML =
+
+    createCard(
+      "🟢 AAJ KA RESULT",
+      now,
+      todayRecords
+    )
+
+    +
+
+    createCard(
+      "📅 KAL KA RESULT",
+      yesterdayDate,
+      yesterdayRecords
+    );
+
+}
+
+
+/* =================================
+   AUTO UPDATE SUMMARY
+================================= */
+
+function startTodayYesterdayFeature(){
+
+  renderTodayYesterday();
+
+  /*
+    Refresh every 30 seconds so
+    the display stays current.
+  */
+
+  setInterval(
+    renderTodayYesterday,
+    30000
+  );
+
+}
+
+
+/* Start feature after page is ready */
+
+if(
+  document.readyState === "loading"
+){
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    startTodayYesterdayFeature
+  );
+
+}
+else{
+
+  startTodayYesterdayFeature();
+
+}
