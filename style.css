@@ -162,3 +162,130 @@
 #todayYesterdayResults .summary-table td:not(:first-child){
   width:11.14%;
 }
+/* =========================================
+   RESULT SUMMARY - PART 01
+========================================= */
+
+#todayYesterdayResults{
+  width:100%;
+  max-width:100%;
+  margin:18px 0 24px;
+  padding:16px 12px 18px;
+  background:#0d172b;
+  border:1px solid #3d5278;
+  border-radius:16px;
+  overflow:hidden;
+}
+
+/* MONTH TITLE */
+
+#todayYesterdayResults .summary-month{
+  margin:0 0 20px;
+  padding:4px 0 12px;
+  text-align:center;
+  color:#f3b21b;
+  font-size:25px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
+/* CROWN */
+
+#todayYesterdayResults .summary-month::before{
+  content:"👑";
+  margin-right:7px;
+  font-size:23px;
+}
+
+/* GOLD LINE */
+
+#todayYesterdayResults .summary-month::after{
+  content:"";
+  display:block;
+  width:70%;
+  height:2px;
+  margin:10px auto 0;
+  background:#f3b21b;
+  border-radius:10px;
+}
+
+/* TABLE BOX */
+
+#todayYesterdayResults .summary-table-wrap{
+  width:100%;
+  max-width:100%;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  background:#111c31;
+  border:1px solid #425a82;
+  border-radius:12px;
+}
+
+/* TABLE */
+
+#todayYesterdayResults .summary-table{
+  width:100%;
+  max-width:100%;
+  table-layout:fixed;
+  border-collapse:collapse;
+  margin:0;
+}
+
+/* HEADER */
+
+#todayYesterdayResults .summary-table th{
+  height:52px;
+  padding:6px 2px;
+  background:#1b3153;
+  color:#ffffff;
+  border-right:1px solid #536b91;
+  border-bottom:1px solid #536b91;
+  text-align:center;
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+/* DATA */
+
+#todayYesterdayResults .summary-table td{
+  height:52px;
+  padding:6px 2px;
+  background:#101b30;
+  color:#ffffff;
+  border-right:1px solid #344b70;
+  border-bottom:1px solid #344b70;
+  text-align:center;
+  font-size:15px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+}
+
+/* DATE WIDTH */
+
+#todayYesterdayResults .summary-table th:first-child,
+#todayYesterdayResults .summary-table td:first-child{
+  width:22%;
+}
+
+/* OTHER COLUMNS */
+
+#todayYesterdayResults .summary-table th:not(:first-child),
+#todayYesterdayResults .summary-table td:not(:first-child){
+  width:11.14%;
+}
+
+/* LAST COLUMN */
+
+#todayYesterdayResults .summary-table th:last-child,
+#todayYesterdayResults .summary-table td:last-child{
+  border-right:0;
+}
+
+/* LAST ROW */
+
+#todayYesterdayResults .summary-table tbody tr:last-child td{
+  border-bottom:0;
+  }
