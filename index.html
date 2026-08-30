@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-  /* Views/status area - existing design को disturb न करने के लिए */
   .hero-title-row{
     display:flex;
     align-items:center;
@@ -60,6 +59,84 @@
   }
 </style>
 
+<style>
+.result-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+.result-summary-card{
+  padding:18px;
+  border:1px solid #2d3b55;
+  border-radius:16px;
+  background:#18253d;
+}
+
+.result-summary-label{
+  font-weight:800;
+  font-size:18px;
+  margin-bottom:8px;
+}
+
+.result-summary-date{
+  opacity:.75;
+  font-size:13px;
+  margin-bottom:12px;
+}
+
+.result-summary-value{
+  font-size:24px;
+  font-weight:900;
+}
+
+.result-summary-empty{
+  opacity:.75;
+  font-size:15px;
+}
+
+@media(max-width:600px){
+  .result-summary-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
+<meta name="description" content="MK Time — live results, next results and previous records.">
+<meta name="theme-color" content="#101a30">
+<link rel="manifest" href="./manifest.json">
+
+<style>
+.quick-tools{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:10px 0 14px;
+}
+
+.quick-tools button{
+  border:1px solid #2d3b55;
+  border-radius:10px;
+  padding:9px 13px;
+  background:#18253d;
+  color:inherit;
+  font-weight:700;
+}
+
+.ad-slot{
+  min-height:40px;
+  margin:20px 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px dashed #2d3b55;
+  border-radius:10px;
+  opacity:.55;
+  font-size:11px;
+  letter-spacing:1px;
+}
+</style>
+
 </head>
 
 <body>
@@ -75,6 +152,11 @@
 
 </header>
 
+<div class="quick-tools" aria-label="Quick tools">
+  <button type="button" id="shareSiteBtn">↗ Share</button>
+  <button type="button" id="installAppBtn" hidden>＋ Install App</button>
+  <button type="button" id="languageBtn">हिंदी / EN</button>
+</div>
 
 <main>
 
@@ -87,7 +169,6 @@
         <p id="today"></p>
       </div>
 
-
       <div class="result-status">
 
         <div
@@ -98,18 +179,15 @@
           👁️ 0 Views
         </div>
 
-
         <div
           id="verifiedStatus"
           class="verified-status"
         ></div>
 
-
         <div
           id="lastUpdated"
           class="last-updated"
         ></div>
-
 
         <button
           id="notifyBtn"
@@ -125,7 +203,6 @@
     </div>
 
   </section>
-
 
   <section class="section">
 
@@ -153,6 +230,19 @@
 
   </section>
 
+  <!-- TODAY / YESTERDAY -->
+  <section class="section result-summary-section">
+
+    <div class="section-title">
+      <span>RESULT SUMMARY</span>
+    </div>
+
+    <div
+      id="todayYesterdayResults"
+      class="result-summary-grid"
+    ></div>
+
+  </section>
 
   <section class="section">
 
@@ -166,7 +256,6 @@
     ></div>
 
   </section>
-
 
   <section class="section">
 
@@ -191,7 +280,6 @@
 
   </section>
 
-
   <section class="notes">
 
     <h2>📌 Important Information</h2>
@@ -214,15 +302,19 @@
 
   </section>
 
-</main>
+  <div
+    class="ad-slot"
+    aria-label="Advertisement"
+  >
+    <span>ADVERTISEMENT</span>
+  </div>
 
+</main>
 
 <footer>
   © <span id="year"></span> MK Time
 </footer>
 
-
-<!-- app.js में import है, इसलिए module जरूरी है -->
 <script type="module" src="app.js"></script>
 
 </body>
