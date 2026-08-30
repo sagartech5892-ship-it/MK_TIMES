@@ -17,7 +17,43 @@
 
   <a class="admin-link" href="index.html">Public Site</a>
 </header>
+<!-- ================= RESULT SUMMARY CONTROL ================= -->
+<section class="section">
 
+  <div class="section-title">
+    <span>✏️ EDIT RESULT TABLE</span>
+  </div>
+
+  <div class="result-editor">
+
+    <label>DATE</label>
+    <input id="summaryDate" type="number" min="1" max="31">
+
+    <div class="summary-input-grid">
+
+      <div><label>SM</label><input id="summarySM" type="text"></div>
+      <div><label>DB</label><input id="summaryDB" type="text"></div>
+
+      <div><label>SG</label><input id="summarySG" type="text"></div>
+      <div><label>FB</label><input id="summaryFB" type="text"></div>
+
+      <div><label>GB</label><input id="summaryGB" type="text"></div>
+      <div><label>GL</label><input id="summaryGL" type="text"></div>
+
+      <div><label>DS</label><input id="summaryDS" type="text"></div>
+
+    </div>
+
+    <button
+      type="button"
+      id="saveSummaryBtn"
+      onclick="saveResultSummary()">
+      💾 SAVE RESULT TABLE
+    </button>
+
+  </div>
+
+  </section>
 <main>
 
 <!-- ================= LOGIN ================= -->
@@ -854,7 +890,48 @@ onAuthStateChanged(auth, function(user) {
 /* ================= INITIAL RENDER ================= */
 
 render();
+async function saveResultSummary(){
 
+  const user = auth.currentUser;
+// ADMIN ONLY
+const ADMIN_EMAIL = "sagartech5892@gmail.com";
+
+if (!user || user.email !== ADMIN_EMAIL) {
+  alert("Sirf Admin Result Table edit kar sakta hai.");
+  return;
+  }
+  if(!user){
+    alert("Please login first.");
+    return;
+  }
+
+  const summary = {
+    date: document.getElementById("summaryDate").value,
+    SM: document.getElementById("summarySM").value,
+    DB: document.getElementById("summaryDB").value,
+    SG: document.getElementById("summarySG").value,
+    FB: document.getElementById("summaryFB").value,
+    GB: document.getElementById("summaryGB").value,
+    GL: document.getElementById("summaryGL").value,
+    DS: document.getElementById("summaryDS").value
+  };
+
+  try {
+
+    await setDoc(
+      doc(db, "resultSummary", "current"),
+      summary
+    );
+
+    alert("RESULT TABLE UPDATED ✅");
+
+  } catch(error) {
+
+    console.error(error);
+    alert("Update failed ❌");
+
+  }
+  }
 </script>
 
 </body>
