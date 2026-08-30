@@ -165,7 +165,75 @@
     ></div>
 
   </section>
+<!-- ================= PREVIOUS RECORDS MANAGER ================= -->
 
+<section class="section">
+
+  <div class="section-title">
+    <span>PREVIOUS RECORDS</span>
+  </div>
+
+  <form id="recordForm" class="form">
+
+    <input
+      type="hidden"
+      id="recordEditIndex"
+      value=""
+    >
+
+    <input
+      id="recordMonth"
+      type="text"
+      placeholder="Month (example: August 2026)"
+      required
+    >
+
+    <input
+      id="recordDate"
+      type="date"
+      required
+    >
+
+    <input
+      id="recordStatus"
+      type="text"
+      placeholder="Status (example: Published)"
+      required
+    >
+
+    <input
+      id="recordValue"
+      type="text"
+      placeholder="Result / Value"
+      required
+    >
+
+    <button
+      type="submit"
+      id="recordSaveBtn"
+    >
+      Add Record
+    </button>
+
+    <button
+      type="button"
+      id="recordCancelBtn"
+      class="secondary"
+      hidden
+    >
+      Cancel Edit
+    </button>
+
+  </form>
+
+  <div
+    id="adminRecords"
+    class="records"
+  ></div>
+
+  <p id="recordMsg"></p>
+
+  </section>
 
   <!-- ================= CHANGE PASSWORD ================= -->
 
