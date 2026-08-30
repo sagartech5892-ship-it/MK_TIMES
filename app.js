@@ -999,7 +999,79 @@ async function archiveOldDayResults(){
 /* =================================
    RENDER
 ================================= */
+function renderResultSummary(){
 
+  const box = document.getElementById("todayYesterdayResults");
+
+  if(!box) return;
+
+  const columns = ["SM","DB","SG","FB","GB","GL","DS"];
+
+  const results = {};
+
+  const all = [
+    ...(data.live || []),
+    ...(data.next || [])
+  ];
+
+  all.forEach(item => {
+
+    const name = String(item.name || "").toUpperCase();
+
+    let key = "";
+
+    if(name.includes("SM") || name.includes("SANGAM"))
+      key = "SM";
+    else if(name.includes("DB") || name.includes("DELHI"))
+      key = "DB";
+    else if(name.includes("SG") || name.includes("GANESH"))
+      key = "SG";
+    else if(name.includes("FB") || name.includes("FARIDABAD"))
+      key = "FB";
+    else if(name.includes("GB") || name.includes("GHAZIABAD"))
+      key = "GB";
+    else if(name.includes("GL") || name.includes("GALI"))
+      key = "GL";
+    else if(name.includes("DS"))
+      key = "DS";
+
+    if(key){
+      results[key] = item.value || "--";
+    }
+
+  });
+
+  const d = new Date();
+
+  const date = String(d.getDate()).padStart(2,"0");
+
+  box.innerHTML = `
+    <div class="summary-table-wrap">
+
+      <table class="summary-table">
+
+        <thead>
+          <tr>
+            <th>DATE</th>
+            ${columns.map(x => `<th>${x}</th>`).join("")}
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>${date}</td>
+            ${columns.map(x => `
+              <td>${escapeHtml(results[x] || "--")}</td>
+            `).join("")}
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+}
+renderResultSummary();
 function render(){
 
   cards(
