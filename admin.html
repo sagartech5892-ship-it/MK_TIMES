@@ -908,22 +908,24 @@ function(){
 window.saveResultSummary =
 async function(){
 
-  const user =
-    auth.currentUser;
+  const user = auth.currentUser;
 
+const isStaffAccount =
+  user &&
+  user.email &&
+  user.email
+    .toLowerCase()
+    .endsWith("@mk-time-staff.com");
 
-  if(
-    !user ||
-    user.email !== ADMIN_EMAIL
-  ){
+if(!user || isStaffAccount){
 
-    alert(
-      "Sirf Admin Result Table edit kar sakta hai."
-    );
+  alert(
+    "Sirf Admin Result Table edit kar sakta hai."
+  );
 
-    return;
+  return;
 
-  }
+}
 
 
   const date =
