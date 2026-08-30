@@ -36,3 +36,129 @@
 .summary-table td:not(:first-child){
   width:11.14%;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           }
+/* =========================================
+   RESULT SUMMARY - NEW DESIGN
+========================================= */
+
+#todayYesterdayResults{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+  margin:18px 0 24px;
+  padding:18px 14px 20px;
+  background:#0d172b;
+  border:2px solid #394d78;
+  border-radius:16px;
+  overflow:hidden;
+}
+
+/* Month heading */
+#todayYesterdayResults .summary-month{
+  position:relative;
+  margin:4px 0 24px;
+  padding:8px 0 12px;
+  text-align:center;
+  font-size:28px;
+  font-weight:800;
+  line-height:1.2;
+  color:#f06a5b;
+  letter-spacing:.3px;
+}
+
+/* Crown before month */
+#todayYesterdayResults .summary-month::before{
+  content:"👑";
+  display:inline-block;
+  margin-right:8px;
+  font-size:28px;
+}
+
+/* Decorative gold lines */
+#todayYesterdayResults .summary-month::after{
+  content:"";
+  display:block;
+  width:65%;
+  max-width:420px;
+  height:2px;
+  margin:10px auto 0;
+  background:#f5a900;
+  box-shadow:
+    -120px 0 0 -0.5px #f5a900,
+    120px 0 0 -0.5px #f5a900;
+}
+
+/* Table outer area */
+#todayYesterdayResults .summary-table-wrap{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+  overflow:hidden;
+  background:#111d33;
+  border:1px solid #52698f;
+  border-radius:14px;
+}
+
+/* Main table */
+#todayYesterdayResults .summary-table{
+  width:100%;
+  max-width:100%;
+  table-layout:fixed;
+  border-collapse:separate;
+  border-spacing:0;
+  margin:0;
+  box-sizing:border-box;
+}
+
+/* Header */
+#todayYesterdayResults .summary-table th{
+  height:58px;
+  padding:8px 3px;
+  background:#1b3153;
+  color:#f4f6fb;
+  border-right:1px solid #52698f;
+  border-bottom:1px solid #52698f;
+  text-align:center;
+  font-size:15px;
+  font-weight:800;
+  white-space:nowrap;
+  box-sizing:border-box;
+}
+
+/* Cells */
+#todayYesterdayResults .summary-table td{
+  height:58px;
+  padding:8px 3px;
+  background:#0f1b2f;
+  color:#f3f5fa;
+  border-right:1px solid #334b70;
+  border-bottom:1px solid #334b70;
+  text-align:center;
+  font-size:16px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+
+/* Last column */
+#todayYesterdayResults .summary-table th:last-child,
+#todayYesterdayResults .summary-table td:last-child{
+  border-right:0;
+}
+
+/* Last row */
+#todayYesterdayResults .summary-table tbody tr:last-child td{
+  border-bottom:0;
+}
+
+/* DATE column */
+#todayYesterdayResults .summary-table th:first-child,
+#todayYesterdayResults .summary-table td:first-child{
+  width:22%;
+}
+
+/* Remaining 7 columns */
+#todayYesterdayResults .summary-table th:not(:first-child),
+#todayYesterdayResults .summary-table td:not(:first-child){
+  width:11.14%;
+}
