@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>MK Time — Staff</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+  .staff-login,
+  .staff-dashboard{
+    max-width:650px;
+    margin:30px auto;
+  }
+
+  .staff-box{
+    background:#18253d;
+    border:1px solid #2d3b55;
+    border-radius:18px;
+    padding:22px;
+    margin-bottom:20px;
+  }
+
+  .staff-box h2{
+    margin-top:0;
+  }
+
+  .staff-form{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .staff-form input,
+  .staff-form select{
+    width:100%;
+    box-sizing:border-box;
+    padding:13px;
+    border-radius:10px;
+    border:1px solid #2d3b55;
+    background:#101a30;
+    color:white;
+    font-size:16px;
+  }
+
+  .staff-form button{
+    padding:13px;
+    border:0;
+    border-radius:10px;
+    background:#ffb718;
+    color:#101a30;
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+  }
+
+  .staff-message{
+    margin-top:10px;
+    font-weight:700;
+  }
+
+  .staff-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+
+  .logout-btn{
+    background:#18253d !important;
+    color:white !important;
+    border:1px solid #2d3b55 !important;
+  }
+
+  .staff-note{
+    opacity:.75;
+    font-size:13px;
+    line-height:1.5;
+  }
+
+  .success{
+    color:#65e572;
+  }
+
+  .error{
+    color:#ff6b6b;
+  }
+</style>
+</head>
+
+<body>
+
+<header class="top">
+
+  <div>
+    <h1>MK TIME</h1>
+    <p>Staff Dashboard</p>
+  </div>
+
+  <a class="admin-link" href="index.html">
+    Public Site
+  </a>
+
+</header>
+
+
+<main>
+
+  <!-- ================= STAFF LOGIN ================= -->
+
+  <section id="loginBox" class="staff-login">
+
+    <div class="section-title">
+      <span>STAFF LOGIN</span>
+    </div>
+
+    <div class="staff-box">
+
+      <form id="loginForm" class="staff-form">
+
+        <input
+          id="staffId"
+          type="text"
+          placeholder="Staff ID"
+          autocomplete="username"
+          required
+        >
+
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button type="submit">
+          Login
+        </button>
+
+        <p id="loginMsg" class="staff-message"></p>
+
+      </form>
+
+      <p class="staff-note">
+        Staff account se sirf results add kiye ja sakte hain.
+        Admin controls staff ko available nahi honge.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- ================= STAFF DASHBOARD ================= -->
+
+  <section
+    id="dashboard"
+    class="staff-dashboard"
+    hidden
+  >
+
+    <div class="staff-box">
+
+      <div class="staff-top">
+
+        <div>
+          <h2>👤 Staff Panel</h2>
+          <p id="loggedStaff"></p>
+        </div>
+
+        <button
+          id="logoutBtn"
+          class="logout-btn"
+          type="button"
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- ================= ADD RESULT ================= -->
+
+    <section class="section">
+
+      <div class="section-title">
+        <span>ADD RESULT</span>
+      </div>
+
+      <div class="staff-box">
+
+        <form id="resultForm" class="staff-form">
+
+          <input
+            id="name"
+            type="text"
+            placeholder="Result Name"
+            required
+          >
+
+          <input
+            id="time"
+            type="time"
+            required
+          >
+
+          <input
+            id="value"
+            type="text"
+            placeholder="Result Number"
+            required
+          >
+
+          <select id="section">
+
+            <option value="live">
+              LIVE
+            </option>
+
+            <option value="next">
+              NEXT
+            </option>
+
+          </select>
+
+          <button type="submit">
+            ➕ Add Result
+          </button>
+
+          <p
+            id="resultMsg"
+            class="staff-message"
+          ></p>
+
+        </form>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================= INFORMATION ================= -->
+
+    <section class="notes">
+
+      <h2>📌 Staff Permissions</h2>
+
+      <ul>
+
+        <li>
+          Staff sirf new result add kar sakta hai.
+        </li>
+
+        <li>
+          Staff existing result edit nahi kar sakta.
+        </li>
+
+        <li>
+          Staff result delete nahi kar sakta.
+        </li>
+
+        <li>
+          Staff result lock/unlock nahi kar sakta.
+        </li>
+
+        <li>
+          Admin ke full controls sirf Admin account ke paas rahenge.
+        </li>
+
+      </ul>
+
+    </section>
+
+  </section>
+
+</main>
+
+
+<script type="module">
+
+import {
+  auth,
+  siteRef,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  getDoc,
+  setDoc
+} from "./firebase.js";
+
+
+const $ = (id) =>
+  document.getElementById(id);
+
+
+/* ================= TIME ================= */
+
+function to12(time){
+
+  if(!time) return "";
+
+  const parts = time.split(":");
+
+  let hour = Number(parts[0]);
+  const minute = parts[1];
+
+  const ampm =
+    hour >= 12
+      ? "PM"
+      : "AM";
+
+  hour = hour % 12 || 12;
+
+  return (
+    String(hour).padStart(2,"0")
+    + ":" +
+    minute +
+    " " +
+    ampm
+  );
+
+}
+
+
+/* ================= LOGIN ================= */
+
+$("loginForm").addEventListener(
+  "submit",
+  async function(event){
+
+    event.preventDefault();
+
+    const staffId =
+      $("staffId").value.trim().toLowerCase();
+
+    const password =
+      $("password").value;
+
+    if(!staffId || !password){
+      return;
+    }
+
+    $("loginMsg").textContent =
+      "Logging in...";
+
+    $("loginMsg").className =
+      "staff-message";
+
+
+    try{
+
+      /*
+        Staff ID ko Firebase email me convert kiya ja raha hai.
+
+        Example:
+
+        Staff ID:
+        staff01
+
+        Firebase email:
+        staff01@mk-time-staff.com
+      */
+
+      const email =
+        staffId + "@mk-time-staff.com";
+
+
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+
+      $("loginMsg").textContent =
+        "Login successful.";
+
+      $("loginMsg").className =
+        "staff-message success";
+
+    }
+
+    catch(error){
+
+      console.error(error);
+
+      $("loginMsg").textContent =
+        "Staff ID ya password galat hai.";
+
+      $("loginMsg").className =
+        "staff-message error";
+
+    }
+
+  }
+);
+
+
+/* ================= AUTH STATE ================= */
+
+onAuthStateChanged(
+  auth,
+  function(user){
+
+    if(user){
+
+      $("loginBox").hidden =
+        true;
+
+      $("dashboard").hidden =
+        false;
+
+      const email =
+        user.email || "";
+
+      const staffId =
+        email
+          .replace("@mk-time-staff.com","");
+
+      $("loggedStaff").textContent =
+        "Logged in as: " + staffId;
+
+    }
+
+    else{
+
+      $("loginBox").hidden =
+        false;
+
+      $("dashboard").hidden =
+        true;
+
+    }
+
+  }
+);
+
+
+/* ================= ADD RESULT ================= */
+
+$("resultForm").addEventListener(
+  "submit",
+  async function(event){
+
+    event.preventDefault();
+
+
+    const name =
+      $("name").value.trim();
+
+    const time =
+      $("time").value;
+
+    const value =
+      $("value").value.trim();
+
+    const section =
+      $("section").value;
+
+
+    if(!name || !time || !value){
+
+      $("resultMsg").textContent =
+        "Sabhi fields bharo.";
+
+      $("resultMsg").className =
+        "staff-message error";
+
+      return;
+
+    }
+
+
+    $("resultMsg").textContent =
+      "Result save ho raha hai...";
+
+    $("resultMsg").className =
+      "staff-message";
+
+
+    try{
+
+      /*
+        Pehle current Firebase data read karenge.
+      */
+
+      const snapshot =
+        await getDoc(siteRef);
+
+
+      let data =
+        snapshot.exists()
+          ? snapshot.data()
+          : {
+              live: [],
+              next: [],
+              records: {}
+            };
+
+
+      if(!Array.isArray(data.live)){
+        data.live = [];
+      }
+
+      if(!Array.isArray(data.next)){
+        data.next = [];
+      }
+
+      if(!data.records){
+        data.records = {};
+      }
+
+
+      /* ================= NEW RESULT ================= */
+
+      const newResult = {
+
+        id:
+          crypto.randomUUID(),
+
+        name:
+          name,
+
+        time:
+          to12(time),
+
+        value:
+          value,
+
+        locked:
+          false
+
+      };
+
+
+      /*
+        Sirf selected section me result add hoga.
+      */
+
+      data[section].push(newResult);
+
+
+      /*
+        Firebase me save.
+      */
+
+      await setDoc(
+        siteRef,
+        data
+      );
+
+
+      $("resultMsg").textContent =
+        "✅ Result successfully add ho gaya!";
+
+      $("resultMsg").className =
+        "staff-message success";
+
+
+      /*
+        Form clear.
+      */
+
+      $("name").value = "";
+      $("time").value = "";
+      $("value").value = "";
+      $("section").value = "live";
+
+    }
+
+    catch(error){
+
+      console.error(error);
+
+      $("resultMsg").textContent =
+        "❌ Result save nahi hua. Firebase rules check karo.";
+
+      $("resultMsg").className =
+        "staff-message error";
+
+    }
+
+  }
+);
+
+
+/* ================= LOGOUT ================= */
+
+$("logoutBtn").addEventListener(
+  "click",
+  async function(){
+
+    await signOut(auth);
+
+  }
+);
+
+</script>
+
+</body>
+          </html>
