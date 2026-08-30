@@ -1681,3 +1681,19 @@ onSnapshot(
 /* =================================
    START
 ================================= */
+window.addEventListener("load", function(){
+
+  try{
+    setupNotifications();
+    loadResultSummary();
+    render();
+    renderResultSummary();
+  }
+  catch(error){
+    console.error(
+      "Final render error:",
+      error
+    );
+  }
+
+});
