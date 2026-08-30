@@ -120,6 +120,7 @@
 
       <form id="loginForm" class="staff-form">
 
+        <!-- STAFF ID -->
         <input
           id="staffId"
           type="text"
@@ -128,6 +129,7 @@
           required
         >
 
+        <!-- PASSWORD -->
         <input
           id="password"
           type="password"
@@ -140,7 +142,10 @@
           Login
         </button>
 
-        <p id="loginMsg" class="staff-message"></p>
+        <p
+          id="loginMsg"
+          class="staff-message"
+        ></p>
 
       </form>
 
@@ -167,8 +172,11 @@
       <div class="staff-top">
 
         <div>
+
           <h2>👤 Staff Panel</h2>
+
           <p id="loggedStaff"></p>
+
         </div>
 
         <button
@@ -194,7 +202,10 @@
 
       <div class="staff-box">
 
-        <form id="resultForm" class="staff-form">
+        <form
+          id="resultForm"
+          class="staff-form"
+        >
 
           <input
             id="name"
@@ -294,40 +305,98 @@ import {
 } from "./firebase.js";
 
 
+/* ================= SHORT FUNCTION ================= */
+
 const $ = (id) =>
   document.getElementById(id);
+
+
+/* =====================================================
+   STAFF ACCOUNTS
+   =====================================================
+
+   Staff ko email nahi dalni hogi.
+
+   STAFF001
+       ↓
+   staff001@mk-time-staff.com
+
+   STAFF002
+       ↓
+   staff002@mk-time-staff.com
+
+   STAFF003
+       ↓
+   staff003@mk-time-staff.com
+
+   Firebase Authentication me ye accounts
+   same email ke saath hone chahiye.
+*/
+
+
+const staffAccounts = {
+
+  "STAFF001":
+    "staff001@mk-time-staff.com",
+
+  "STAFF002":
+    "staff002@mk-time-staff.com",
+
+  "STAFF003":
+    "staff003@mk-time-staff.com"
+
+};
 
 
 /* ================= TIME ================= */
 
 function to12(time){
 
-  if(!time) return "";
+  if(!time){
+    return "";
+  }
 
-  const parts = time.split(":");
 
-  let hour = Number(parts[0]);
-  const minute = parts[1];
+  const parts =
+    time.split(":");
+
+
+  let hour =
+    Number(parts[0]);
+
+
+  const minute =
+    parts[1];
+
 
   const ampm =
     hour >= 12
       ? "PM"
       : "AM";
 
-  hour = hour % 12 || 12;
+
+  hour =
+    hour % 12 || 12;
+
 
   return (
     String(hour).padStart(2,"0")
-    + ":" +
-    minute +
-    " " +
+    +
+    ":"
+    +
+    minute
+    +
+    " "
+    +
     ampm
   );
 
 }
 
 
-/* ================= LOGIN ================= */
+/* =====================================================
+   STAFF LOGIN
+   ===================================================== */
 
 $("loginForm").addEventListener(
   "submit",
@@ -335,40 +404,81 @@ $("loginForm").addEventListener(
 
     event.preventDefault();
 
+
+    /*
+      Staff ID ko uppercase me convert karenge.
+
+      Example:
+
+      staff001
+      STAFF001
+      Staff001
+
+      tino STAFF001 ban jayenge.
+    */
+
     const staffId =
-      $("staffId").value.trim().toLowerCase();
+      $("staffId")
+        .value
+        .trim()
+        .toUpperCase();
+
 
     const password =
       $("password").value;
 
-    if(!staffId || !password){
+
+    if(
+      !staffId ||
+      !password
+    ){
+
       return;
+
     }
+
 
     $("loginMsg").textContent =
       "Logging in...";
+
 
     $("loginMsg").className =
       "staff-message";
 
 
+    /*
+      Staff ID se hidden Firebase email
+      automatically select hogi.
+    */
+
+    const email =
+      staffAccounts[staffId];
+
+
+    /*
+      Agar Staff ID list me nahi hai.
+    */
+
+    if(!email){
+
+      $("loginMsg").textContent =
+        "Staff ID ya password galat hai.";
+
+      $("loginMsg").className =
+        "staff-message error";
+
+      return;
+
+    }
+
+
     try{
 
       /*
-        Staff ID ko Firebase email me convert kiya ja raha hai.
+        Firebase login.
 
-        Example:
-
-        Staff ID:
-        staff01
-
-        Firebase email:
-        staff01@mk-time-staff.com
+        User ko hidden email ki zarurat nahi.
       */
-
-      const email =
-        staffId + "@mk-time-staff.com";
-
 
       await signInWithEmailAndPassword(
         auth,
@@ -387,7 +497,11 @@ $("loginForm").addEventListener(
 
     catch(error){
 
-      console.error(error);
+      console.error(
+        "Staff login error:",
+        error
+      );
+
 
       $("loginMsg").textContent =
         "Staff ID ya password galat hai.";
@@ -401,7 +515,9 @@ $("loginForm").addEventListener(
 );
 
 
-/* ================= AUTH STATE ================= */
+/* =====================================================
+   AUTH STATE
+   ===================================================== */
 
 onAuthStateChanged(
   auth,
@@ -409,31 +525,92 @@ onAuthStateChanged(
 
     if(user){
 
+      /*
+        Login box hide.
+      */
+
       $("loginBox").hidden =
         true;
+
+
+      /*
+        Dashboard show.
+      */
 
       $("dashboard").hidden =
         false;
 
+
+      /*
+        Firebase email se Staff ID
+        automatically niklegi.
+      */
+
       const email =
         user.email || "";
 
-      const staffId =
-        email
-          .replace("@mk-time-staff.com","");
 
-      $("loggedStaff").textContent =
-        "Logged in as: " + staffId;
+      let staffId =
+        "";
+
+
+      for(
+        const id in staffAccounts
+      ){
+
+        if(
+          staffAccounts[id]
+            .toLowerCase()
+          ===
+          email.toLowerCase()
+        ){
+
+          staffId =
+            id;
+
+          break;
+
+        }
+
+      }
+
+
+      /*
+        Agar account staff list me mila.
+      */
+
+      if(staffId){
+
+        $("loggedStaff").textContent =
+          "Logged in as: " + staffId;
+
+      }
+
+      else{
+
+        $("loggedStaff").textContent =
+          "Logged in as: Staff";
+
+      }
 
     }
 
     else{
 
+      /*
+        Logout ke baad login page.
+      */
+
       $("loginBox").hidden =
         false;
 
+
       $("dashboard").hidden =
         true;
+
+
+      $("loggedStaff").textContent =
+        "";
 
     }
 
@@ -441,7 +618,9 @@ onAuthStateChanged(
 );
 
 
-/* ================= ADD RESULT ================= */
+/* =====================================================
+   ADD RESULT
+   ===================================================== */
 
 $("resultForm").addEventListener(
   "submit",
@@ -451,19 +630,30 @@ $("resultForm").addEventListener(
 
 
     const name =
-      $("name").value.trim();
+      $("name")
+        .value
+        .trim();
+
 
     const time =
       $("time").value;
 
+
     const value =
-      $("value").value.trim();
+      $("value")
+        .value
+        .trim();
+
 
     const section =
       $("section").value;
 
 
-    if(!name || !time || !value){
+    if(
+      !name ||
+      !time ||
+      !value
+    ){
 
       $("resultMsg").textContent =
         "Sabhi fields bharo.";
@@ -479,6 +669,7 @@ $("resultForm").addEventListener(
     $("resultMsg").textContent =
       "Result save ho raha hai...";
 
+
     $("resultMsg").className =
       "staff-message";
 
@@ -486,11 +677,13 @@ $("resultForm").addEventListener(
     try{
 
       /*
-        Pehle current Firebase data read karenge.
+        Current Firebase data read.
       */
 
       const snapshot =
-        await getDoc(siteRef);
+        await getDoc(
+          siteRef
+        );
 
 
       let data =
@@ -503,16 +696,38 @@ $("resultForm").addEventListener(
             };
 
 
-      if(!Array.isArray(data.live)){
+      /*
+        Safety checks.
+      */
+
+      if(
+        !Array.isArray(
+          data.live
+        )
+      ){
+
         data.live = [];
+
       }
 
-      if(!Array.isArray(data.next)){
+
+      if(
+        !Array.isArray(
+          data.next
+        )
+      ){
+
         data.next = [];
+
       }
 
-      if(!data.records){
+
+      if(
+        !data.records
+      ){
+
         data.records = {};
+
       }
 
 
@@ -539,10 +754,12 @@ $("resultForm").addEventListener(
 
 
       /*
-        Sirf selected section me result add hoga.
+        Selected section me result add.
       */
 
-      data[section].push(newResult);
+      data[section].push(
+        newResult
+      );
 
 
       /*
@@ -558,6 +775,7 @@ $("resultForm").addEventListener(
       $("resultMsg").textContent =
         "✅ Result successfully add ho gaya!";
 
+
       $("resultMsg").className =
         "staff-message success";
 
@@ -566,19 +784,31 @@ $("resultForm").addEventListener(
         Form clear.
       */
 
-      $("name").value = "";
-      $("time").value = "";
-      $("value").value = "";
-      $("section").value = "live";
+      $("name").value =
+        "";
+
+      $("time").value =
+        "";
+
+      $("value").value =
+        "";
+
+      $("section").value =
+        "live";
 
     }
 
     catch(error){
 
-      console.error(error);
+      console.error(
+        "Result save error:",
+        error
+      );
+
 
       $("resultMsg").textContent =
         "❌ Result save nahi hua. Firebase rules check karo.";
+
 
       $("resultMsg").className =
         "staff-message error";
@@ -589,13 +819,30 @@ $("resultForm").addEventListener(
 );
 
 
-/* ================= LOGOUT ================= */
+/* =====================================================
+   LOGOUT
+   ===================================================== */
 
 $("logoutBtn").addEventListener(
   "click",
   async function(){
 
-    await signOut(auth);
+    try{
+
+      await signOut(
+        auth
+      );
+
+    }
+
+    catch(error){
+
+      console.error(
+        "Logout error:",
+        error
+      );
+
+    }
 
   }
 );
@@ -603,4 +850,4 @@ $("logoutBtn").addEventListener(
 </script>
 
 </body>
-    </html>
+  </html>
