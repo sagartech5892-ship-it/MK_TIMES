@@ -5,37 +5,18 @@ import {
   doc,
   getDoc,
   runTransaction,
-  setDoc,
   onSnapshot as firestoreOnSnapshot
 } from "./firebase.js";
 
-
-/* =================================
-   FALLBACK
-================================= */
-
 const fallback = {
-
   live: [],
-
   next: [],
-
   records: {}
-
 };
 
-
-let data = {
-  ...fallback
-};
-
-
-/* =================================
-   HTML ESCAPE
-================================= */
+let data = { ...fallback };
 
 function escapeHtml(v){
-
   return String(v ?? "").replace(
     /[&<>"']/g,
     m => ({
@@ -46,216 +27,92 @@ function escapeHtml(v){
       "'":"&#039;"
     }[m])
   );
-
 }
-
-
-/* =================================
-   VIEWER ID
-================================= */
 
 function getViewerId(){
-
-  const key =
-    "mk_time_viewer_id_v1";
-
-  let id =
-    localStorage.getItem(key);
-
+  const key = "mk_time_viewer_id_v1";
+  let id = localStorage.getItem(key);
 
   if(!id){
-
     id =
-      (
-        typeof crypto !== "undefined" &&
-        typeof crypto.randomUUID === "function"
-      )
+      typeof crypto !== "undefined" &&
+      typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : Date.now().toString(36) + "-" +
+          Math.random().toString(36).slice(2);
 
-      ? crypto.randomUUID()
-
-      : Date.now().toString(36) +
-        "-" +
-        Math.random()
-          .toString(36)
-          .slice(2);
-
-
-    localStorage.setItem(
-      key,
-      id
-    );
-
+    localStorage.setItem(key, id);
   }
-
 
   return id;
-
 }
-
-
-/* =================================
-   TODAY KEY
-================================= */
 
 function todayKey(){
-
-  const d =
-    new Date();
+  const d = new Date();
 
   return (
-
-    d.getFullYear() +
-    "-" +
-    String(
-      d.getMonth()+1
-    ).padStart(2,"0") +
-    "-" +
-    String(
-      d.getDate()
-    ).padStart(2,"0")
-
+    d.getFullYear() + "-" +
+    String(d.getMonth()+1).padStart(2,"0") + "-" +
+    String(d.getDate()).padStart(2,"0")
   );
-
 }
-
-
-/* =================================
-   SAFE FIRESTORE ID
-================================= */
 
 function safeId(value){
-
-  return String(
-    value ?? ""
-  )
-  .replace(
-    /[^A-Za-z0-9_-]/g,
-    "_"
-  )
-  .slice(0,120)
-
-  || "unknown";
-
+  return String(value ?? "")
+    .replace(/[^A-Za-z0-9_-]/g,"_")
+    .slice(0,120) || "unknown";
 }
-
-
-/* =================================
-   HASH
-================================= */
 
 function hashString(value){
+  let hash = 2166136261;
 
-  let hash =
-    2166136261;
-
-
-  for(
-    let i=0;
-    i<value.length;
-    i++
-  ){
-
+  for(let i=0;i<value.length;i++){
     hash ^= value.charCodeAt(i);
-
-    hash =
-      Math.imul(
-        hash,
-        16777619
-      );
-
+    hash = Math.imul(hash,16777619);
   }
 
-
-  return (
-    hash >>> 0
-  )
-  .toString(16)
-  .padStart(8,"0");
-
+  return (hash >>> 0).toString(16).padStart(8,"0");
 }
-
-
-/* =================================
-   RESULT ID
-================================= */
 
 function getResultId(result){
-
-  return String(
-    result?.id ?? ""
-  );
-
+  return String(result?.id ?? "");
 }
-
-
-/* =================================
-   COUNT VIEW
-================================= */
 
 async function countView(result){
 
-  const resultId =
-    getResultId(result);
+  const resultId = getResultId(result);
 
-
-  if(!resultId){
-    return;
-  }
-
+  if(!resultId) return;
 
   let viewerId;
 
-
   try{
-
-    viewerId =
-      getViewerId();
-
+    viewerId = getViewerId();
   }
-
   catch(error){
-
-    console.error(
-      "Viewer ID error:",
-      error
-    );
-
+    console.error("Viewer ID error:",error);
     return;
-
   }
 
+  const day = todayKey();
 
-  const day =
-    todayKey();
+  const markerId = hashString(
+    viewerId + "|" + resultId + "|" + day
+  );
 
+  const counterRef = doc(
+    db,
+    "resultViews",
+    safeId(resultId)
+  );
 
-  const markerId =
-    hashString(
-      viewerId +
-      "|" +
-      resultId +
-      "|" +
-      day
-    );
-
-
-  const counterRef =
-    doc(
-      db,
-      "resultViews",
-      safeId(resultId)
-    );
-
-
-  const markerRef =
-    doc(
-      db,
-      "resultViews",
-      safeId(resultId),
-      "daily",
-      markerId
-    );
-
+  const markerRef = doc(
+    db,
+    "resultViews",
+    safeId(resultId),
+    "daily",
+    markerId
+  );
 
   try{
 
@@ -264,144 +121,84 @@ async function countView(result){
       async transaction => {
 
         const markerSnap =
-          await transaction.get(
-            markerRef
-          );
+          await transaction.get(markerRef);
 
-
-        if(markerSnap.exists()){
-          return;
-        }
-
+        if(markerSnap.exists()) return;
 
         const counterSnap =
-          await transaction.get(
-            counterRef
-          );
-
+          await transaction.get(counterRef);
 
         const currentCount =
           counterSnap.exists()
-            ? Number(
-                counterSnap.data().count || 0
-              )
+            ? Number(counterSnap.data().count || 0)
             : 0;
-
 
         transaction.set(
           counterRef,
           {
-            count:
-              currentCount + 1
+            count: currentCount + 1
           },
           {
             merge:true
           }
         );
 
-
         transaction.set(
           markerRef,
           {
             day:day,
-            createdAt:
-              new Date().toISOString()
+            createdAt:new Date().toISOString()
           }
         );
-
       }
     );
 
   }
-
   catch(error){
-
-    console.error(
-      "View counter error:",
-      error
-    );
-
+    console.error("View counter error:",error);
   }
-
 }
-
-
-/* =================================
-   TOTAL VIEWS
-================================= */
 
 function updateTotalViews(total){
 
   const el =
-    document.getElementById(
-      "totalViews"
-    );
+    document.getElementById("totalViews");
 
-
-  if(!el){
-    return;
-  }
-
+  if(!el) return;
 
   el.textContent =
-    "👁️ " +
-    Number(total || 0) +
-    " Views";
-
+    "👁️ " + Number(total || 0) + " Views";
 }
 
-
-/* =================================
-   VIEW COUNT LISTENERS
-================================= */
-
 let viewUnsubscribers = [];
-
 
 function clearViewListeners(){
 
   viewUnsubscribers.forEach(
     unsubscribe => {
-
       try{
         unsubscribe();
       }
       catch(_){}
-
     }
   );
 
-
   viewUnsubscribers = [];
-
 }
-
-
-/* =================================
-   LIVE VIEW COUNTS
-================================= */
 
 function listenToViewCounts(results){
 
   clearViewListeners();
 
-
   const items =
-    (results || [])
-      .filter(
-        item =>
-          getResultId(item)
-      );
-
+    (results || []).filter(
+      item => getResultId(item)
+    );
 
   if(!items.length){
-
     updateTotalViews(0);
-
     return;
-
   }
-
 
   const unique =
     Array.from(
@@ -415,136 +212,80 @@ function listenToViewCounts(results){
       ).values()
     );
 
+  const counts = new Map();
 
-  const counts =
-    new Map();
+  unique.forEach(result => {
 
+    const resultId =
+      getResultId(result);
 
-  unique.forEach(
-    result => {
-
-      const resultId =
-        getResultId(result);
-
-
-      const counterRef =
-        doc(
-          db,
-          "resultViews",
-          safeId(resultId)
-        );
-
-
-      const unsubscribe =
-        firestoreOnSnapshot(
-
-          counterRef,
-
-          snap => {
-
-            const count =
-              snap.exists()
-                ? Number(
-                    snap.data().count || 0
-                  )
-                : 0;
-
-
-            counts.set(
-              resultId,
-              count
-            );
-
-
-            const total =
-              Array.from(
-                counts.values()
-              )
-              .reduce(
-                (sum,value) =>
-                  sum + value,
-                0
-              );
-
-
-            updateTotalViews(
-              total
-            );
-
-          },
-
-          error => {
-
-            console.error(
-              "View count read error:",
-              error
-            );
-
-
-            if(
-              !counts.has(
-                resultId
-              )
-            ){
-
-              counts.set(
-                resultId,
-                0
-              );
-
-            }
-
-
-            const total =
-              Array.from(
-                counts.values()
-              )
-              .reduce(
-                (sum,value) =>
-                  sum + value,
-                0
-              );
-
-
-            updateTotalViews(
-              total
-            );
-
-          }
-
-        );
-
-
-      viewUnsubscribers.push(
-        unsubscribe
+    const counterRef =
+      doc(
+        db,
+        "resultViews",
+        safeId(resultId)
       );
 
-    }
-  );
+    const unsubscribe =
+      firestoreOnSnapshot(
+        counterRef,
 
+        snap => {
+
+          const count =
+            snap.exists()
+              ? Number(snap.data().count || 0)
+              : 0;
+
+          counts.set(resultId,count);
+
+          const total =
+            Array.from(counts.values())
+              .reduce(
+                (sum,value) => sum + value,
+                0
+              );
+
+          updateTotalViews(total);
+        },
+
+        error => {
+
+          console.error(
+            "View count read error:",
+            error
+          );
+
+          if(!counts.has(resultId)){
+            counts.set(resultId,0);
+          }
+
+          const total =
+            Array.from(counts.values())
+              .reduce(
+                (sum,value) => sum + value,
+                0
+              );
+
+          updateTotalViews(total);
+        }
+      );
+
+    viewUnsubscribers.push(unsubscribe);
+  });
 }
-
-
-/* =================================
-   CARDS
-================================= */
 
 function cards(id,items){
 
   const el =
     document.getElementById(id);
 
-
-  if(!el){
-    return;
-  }
-
+  if(!el) return;
 
   el.innerHTML =
     (items || [])
       .map(
         x => `
-
           <article class="card">
 
             <div>
@@ -564,133 +305,71 @@ function cards(id,items){
             </strong>
 
           </article>
-
         `
       )
       .join("")
-
     ||
-
     '<p class="empty">No announcements yet.</p>';
-
 }
-
-
-/* =================================
-   VERIFIED STATUS
-================================= */
 
 function updateVerifiedStatus(){
 
   const el =
-    document.getElementById(
-      "verifiedStatus"
-    );
+    document.getElementById("verifiedStatus");
 
-
-  if(!el){
-    return;
-  }
-
+  if(!el) return;
 
   const allResults = [
-
     ...(data.live || []),
     ...(data.next || [])
-
   ];
-
 
   if(
     allResults.length &&
     allResults.every(
-      item =>
-        item.verified === true
+      item => item.verified === true
     )
   ){
-
-    el.textContent =
-      "✓ Verified";
-
+    el.textContent = "✓ Verified";
   }
-
   else{
-
-    el.textContent =
-      "";
-
+    el.textContent = "";
   }
-
 }
-
-
-/* =================================
-   LAST UPDATED
-================================= */
 
 function updateLastUpdated(){
 
   const el =
-    document.getElementById(
-      "lastUpdated"
-    );
+    document.getElementById("lastUpdated");
 
-
-  if(!el){
-    return;
-  }
-
+  if(!el) return;
 
   const value =
     data.updatedAt ||
     data.lastUpdated;
 
-
   if(!value){
-
-    el.textContent =
-      "";
-
+    el.textContent = "";
     return;
-
   }
-
 
   let date;
 
-
   try{
-
     date =
       value?.toDate
         ? value.toDate()
         : new Date(value);
-
   }
-
   catch(_){
-
-    el.textContent =
-      "";
-
+    el.textContent = "";
     return;
-
   }
 
-
-  if(
-    Number.isNaN(
-      date.getTime()
-    )
-  ){
-
-    el.textContent =
-      "";
-
+  if(Number.isNaN(date.getTime())){
+    el.textContent = "";
     return;
-
   }
-
 
   el.textContent =
     "Updated " +
@@ -701,95 +380,55 @@ function updateLastUpdated(){
         minute:"2-digit"
       }
     );
-
 }
-
-
-/* =================================
-   NOTIFICATIONS
-================================= */
 
 function setupNotifications(){
 
   const btn =
-    document.getElementById(
-      "notifyBtn"
-    );
+    document.getElementById("notifyBtn");
 
+  if(!btn) return;
 
-  if(!btn){
+  if(!("Notification" in window)){
+    btn.hidden = true;
     return;
   }
 
+  btn.hidden = false;
 
-  if(
-    !("Notification" in window)
-  ){
-
-    btn.hidden =
-      true;
-
-    return;
-
+  if(Notification.permission === "granted"){
+    btn.textContent = "🔔 Notifications On";
   }
 
+  btn.onclick = async function(){
 
-  btn.hidden =
-    false;
+    try{
 
+      const permission =
+        await Notification.requestPermission();
 
-  if(
-    Notification.permission ===
-    "granted"
-  ){
+      if(permission === "granted"){
 
-    btn.textContent =
-      "🔔 Notifications On";
+        btn.textContent =
+          "🔔 Notifications On";
 
-  }
-
-
-  btn.onclick =
-    async function(){
-
-      try{
-
-        const permission =
-          await Notification.requestPermission();
-
-
-        if(
-          permission ===
-          "granted"
-        ){
-
-          btn.textContent =
-            "🔔 Notifications On";
-
-
-          new Notification(
-            "MK Time",
-            {
-              body:
-                "Result notifications enabled."
-            }
-          );
-
-        }
-
-      }
-
-      catch(error){
-
-        console.error(
-          "Notification error:",
-          error
+        new Notification(
+          "MK Time",
+          {
+            body:
+              "Result notifications enabled."
+          }
         );
-
       }
 
-    };
-
+    }
+    catch(error){
+      console.error(
+        "Notification error:",
+        error
+      );
+    }
+  };
 }
 
 
@@ -799,9 +438,17 @@ function setupNotifications(){
 
 let summaryData = {
   month:"",
-  records:{}
+  records:{},
+  columns:[
+    "SM",
+    "DB",
+    "SG",
+    "FB",
+    "GB",
+    "GL",
+    "DS"
+  ]
 };
-
 
 async function loadResultSummary(){
 
@@ -814,44 +461,55 @@ async function loadResultSummary(){
         "current"
       );
 
-
     const snap =
-      await getDoc(
-        resultRef
-      );
+      await getDoc(resultRef);
 
+    if(snap.exists()){
 
-    if(
-      snap.exists()
-    ){
+      const d = snap.data();
 
-      summaryData =
-        {
-          month:
-            snap.data().month || "",
+      summaryData = {
 
-          records:
-            snap.data().records || {}
+        month:d.month || "",
 
-        };
+        records:d.records || {},
+
+        columns:
+          Array.isArray(d.columns) &&
+          d.columns.length
+            ? d.columns
+            : [
+                "SM",
+                "DB",
+                "SG",
+                "FB",
+                "GB",
+                "GL",
+                "DS"
+              ]
+      };
 
     }
-
     else{
 
-      summaryData =
-        {
-          month:"",
-          records:{}
-        };
-
+      summaryData = {
+        month:"",
+        records:{},
+        columns:[
+          "SM",
+          "DB",
+          "SG",
+          "FB",
+          "GB",
+          "GL",
+          "DS"
+        ]
+      };
     }
-
 
     renderResultSummary();
 
   }
-
   catch(error){
 
     console.error(
@@ -860,12 +518,11 @@ async function loadResultSummary(){
     );
 
   }
-
 }
 
 
 /* =================================
-   RENDER RESULT SUMMARY
+   DYNAMIC RESULT TABLE
 ================================= */
 
 function renderResultSummary(){
@@ -875,60 +532,71 @@ function renderResultSummary(){
       "todayYesterdayResults"
     );
 
+  if(!box) return;
 
-  if(!box){
-    return;
-  }
-
-
-  const columns = [
-    "SM",
-    "DB",
-    "SG",
-    "FB",
-    "GB",
-    "GL",
-    "DS"
-  ];
-
+  const columns =
+    Array.isArray(summaryData.columns) &&
+    summaryData.columns.length
+      ? summaryData.columns
+      : [
+          "SM",
+          "DB",
+          "SG",
+          "FB",
+          "GB",
+          "GL",
+          "DS"
+        ];
 
   const records =
     summaryData.records || {};
-
 
   const dates =
     Object.keys(records)
       .sort(
         (a,b) =>
-          Number(a) -
-          Number(b)
+          Number(a) - Number(b)
       );
 
+  const columnHeaders =
+    columns.map(column => {
+
+      const label =
+        typeof column === "object"
+          ? column.label
+          : column;
+
+      return `
+        <th>
+          ${escapeHtml(label)}
+        </th>
+      `;
+    }).join("");
 
   if(!dates.length){
 
     box.innerHTML = `
+
       <div class="summary-table-wrap">
 
-        <h3 class="summary-month">
+        <h2 class="summary-month">
           ${escapeHtml(
             summaryData.month || ""
           )}
-        </h3>
+        </h2>
 
         <table class="summary-table">
 
           <thead>
+
             <tr>
 
               <th>DATE</th>
 
-              ${columns.map(
-                x =>
-                  `<th>${x}</th>`
-              ).join("")}
+              ${columnHeaders}
 
             </tr>
+
           </thead>
 
           <tbody>
@@ -938,8 +606,7 @@ function renderResultSummary(){
               <td>--</td>
 
               ${columns.map(
-                () =>
-                  `<td>--</td>`
+                () => `<td>--</td>`
               ).join("")}
 
             </tr>
@@ -949,12 +616,11 @@ function renderResultSummary(){
         </table>
 
       </div>
+
     `;
 
     return;
-
   }
-
 
   box.innerHTML = `
 
@@ -974,10 +640,7 @@ function renderResultSummary(){
 
             <th>DATE</th>
 
-            ${columns.map(
-              x =>
-                `<th>${x}</th>`
-            ).join("")}
+            ${columnHeaders}
 
           </tr>
 
@@ -986,41 +649,43 @@ function renderResultSummary(){
         <tbody>
 
           ${
-            dates.map(
-              date => {
+            dates.map(date => {
 
-                const row =
-                  records[date] || {};
+              const row =
+                records[date] || {};
 
+              return `
 
-                return `
+                <tr>
 
-                  <tr>
+                  <td>
+                    ${escapeHtml(date)}
+                  </td>
 
-                    <td>
-                      ${escapeHtml(date)}
-                    </td>
+                  ${
+                    columns.map(column => {
 
-                    ${
-                      columns.map(
-                        column => `
+                      const key =
+                        typeof column === "object"
+                          ? column.key
+                          : column;
 
-                          <td>
-                            ${escapeHtml(
-                              row[column] || "--"
-                            )}
-                          </td>
+                      return `
+                        <td>
+                          ${escapeHtml(
+                            row[key] || "--"
+                          )}
+                        </td>
+                      `;
 
-                        `
-                      ).join("")
-                    }
+                    }).join("")
+                  }
 
-                  </tr>
+                </tr>
 
-                `;
+              `;
 
-              }
-            ).join("")
+            }).join("")
           }
 
         </tbody>
@@ -1030,10 +695,7 @@ function renderResultSummary(){
     </div>
 
   `;
-
-}
-
-
+  }
 /* =================================
    RENDER
 ================================= */
@@ -1045,12 +707,10 @@ function render(){
     data.live
   );
 
-
   cards(
     "next",
     data.next
   );
-
 
   const displayedResults = [
 
@@ -1059,17 +719,14 @@ function render(){
 
   ];
 
-
   displayedResults.forEach(
     result =>
       countView(result)
   );
 
-
   listenToViewCounts(
     displayedResults
   );
-
 
   updateVerifiedStatus();
 
@@ -1077,70 +734,48 @@ function render(){
 
   renderResultSummary();
 
-
   const month =
-    document.getElementById(
-      "month"
-    );
-
+    document.getElementById("month");
 
   if(month){
 
     const current =
       month.value;
 
-
-    month.innerHTML =
-      "";
-
+    month.innerHTML = "";
 
     Object.keys(
       data.records || {}
     )
     .sort()
     .reverse()
-    .forEach(
-      k => {
+    .forEach(k => {
 
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          k;
-
-        option.textContent =
-          k;
-
-        month.appendChild(
-          option
+      const option =
+        document.createElement(
+          "option"
         );
 
-      }
-    );
+      option.value = k;
+      option.textContent = k;
 
+      month.appendChild(option);
+
+    });
 
     if(
-      [...month.options]
-        .some(
-          option =>
-            option.value ===
-            current
-        )
+      [...month.options].some(
+        option =>
+          option.value === current
+      )
     ){
 
-      month.value =
-        current;
+      month.value = current;
 
     }
 
-
     showRecords();
-
   }
-
 }
 
 
@@ -1149,10 +784,7 @@ function render(){
 ================================= */
 
 const today =
-  document.getElementById(
-    "today"
-  );
-
+  document.getElementById("today");
 
 if(today){
 
@@ -1167,7 +799,6 @@ if(today){
           day:"numeric"
         }
       );
-
 }
 
 
@@ -1176,17 +807,13 @@ if(today){
 ================================= */
 
 const year =
-  document.getElementById(
-    "year"
-  );
-
+  document.getElementById("year");
 
 if(year){
 
   year.textContent =
     new Date()
       .getFullYear();
-
 }
 
 
@@ -1194,45 +821,33 @@ if(year){
    REFRESH
 ================================= */
 
-let refreshing =
-  false;
-
+let refreshing = false;
 
 window.refreshResults =
 function(){
 
-  if(refreshing){
-    return;
-  }
+  if(refreshing) return;
 
-
-  refreshing =
-    true;
-
+  refreshing = true;
 
   const btn =
     document.getElementById(
       "refreshBtn"
     );
 
-
   if(btn){
 
-    btn.disabled =
-      true;
+    btn.disabled = true;
 
     btn.textContent =
       "↻ Refreshing...";
 
   }
 
-
   setTimeout(
-    () =>
-      location.reload(),
+    () => location.reload(),
     150
   );
-
 };
 
 
@@ -1244,32 +859,17 @@ window.showRecords =
 function(){
 
   const month =
-    document.getElementById(
-      "month"
-    );
-
+    document.getElementById("month");
 
   const el =
-    document.getElementById(
-      "records"
-    );
+    document.getElementById("records");
 
-
-  if(
-    !month ||
-    !el
-  ){
-
-    return;
-
-  }
-
+  if(!month || !el) return;
 
   const rows =
     data.records?.[
       month.value
     ] || [];
-
 
   el.innerHTML = `
 
@@ -1279,17 +879,9 @@ function(){
 
         <tr>
 
-          <th>
-            Date
-          </th>
-
-          <th>
-            Status
-          </th>
-
-          <th>
-            Value
-          </th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Value</th>
 
         </tr>
 
@@ -1328,7 +920,6 @@ function(){
     </table>
 
   `;
-
 };
 
 
@@ -1342,9 +933,7 @@ onSnapshot(
 
   snap => {
 
-    if(
-      snap.exists()
-    ){
+    if(snap.exists()){
 
       data = {
 
@@ -1362,22 +951,6 @@ onSnapshot(
 
     }
 
-
-    /*
-      IMPORTANT:
-
-      Yahan pehle archiveOldDayResults()
-      call hota tha.
-
-      Ab usse hata diya gaya hai.
-
-      Isliye LIVE/NEXT result time ke baad
-      automatically delete/archive nahi hoga.
-
-      Result tabhi change hoga jab Admin khud
-      Firebase/site data ko change karega.
-    */
-
     render();
 
   },
@@ -1389,16 +962,14 @@ onSnapshot(
       error
     );
 
-
     render();
 
   }
-
 );
 
 
 /* =================================
-   RESULT SUMMARY REAL-TIME LISTENER
+   RESULT SUMMARY REAL-TIME
 ================================= */
 
 onSnapshot(
@@ -1411,33 +982,55 @@ onSnapshot(
 
   snap => {
 
-    if(
-      snap.exists()
-    ){
+    if(snap.exists()){
+
+      const d =
+        snap.data();
 
       summaryData = {
 
         month:
-          snap.data().month || "",
+          d.month || "",
 
         records:
-          snap.data().records || {}
+          d.records || {},
 
+        columns:
+          Array.isArray(d.columns) &&
+          d.columns.length
+            ? d.columns
+            : [
+                "SM",
+                "DB",
+                "SG",
+                "FB",
+                "GB",
+                "GL",
+                "DS"
+              ]
       };
 
     }
-
     else{
 
       summaryData = {
 
         month:"",
-        records:{}
+        records:{},
+
+        columns:[
+          "SM",
+          "DB",
+          "SG",
+          "FB",
+          "GB",
+          "GL",
+          "DS"
+        ]
 
       };
 
     }
-
 
     renderResultSummary();
 
@@ -1456,14 +1049,9 @@ onSnapshot(
 
 
 /* =================================
-   NOTIFICATION START
+   START
 ================================= */
 
 setupNotifications();
-
-
-/* =================================
-   RESULT SUMMARY START
-================================= */
 
 loadResultSummary();
