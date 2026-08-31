@@ -1,10 +1,107 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MK Time — Admin</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MK Time — Admin</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.result-editor{
+  background:#18253d;
+  border:1px solid #2d3b55;
+  border-radius:16px;
+  padding:16px;
+  overflow:hidden;
+}
+
+.summary-scroll{
+  overflow-x:auto;
+  width:100%;
+}
+
+.summary-editor-table{
+  border-collapse:collapse;
+  width:max-content;
+  min-width:100%;
+}
+
+.summary-editor-table th,
+.summary-editor-table td{
+  border:1px solid #2d3b55;
+  padding:8px;
+  text-align:center;
+  white-space:nowrap;
+}
+
+.summary-editor-table input{
+  width:80px;
+  box-sizing:border-box;
+  padding:9px 6px;
+  border-radius:7px;
+  border:1px solid #2d3b55;
+  background:#101a30;
+  color:white;
+  text-align:center;
+}
+
+.summary-editor-table th{
+  font-weight:800;
+}
+
+.column-controls{
+  display:flex;
+  gap:5px;
+  justify-content:center;
+  margin-bottom:5px;
+}
+
+.column-controls button{
+  padding:4px 7px;
+  border:1px solid #2d3b55;
+  border-radius:6px;
+  background:#101a30;
+  color:white;
+  cursor:pointer;
+  font-size:11px;
+}
+
+.column-controls button:hover{
+  background:#243552;
+}
+
+.add-column-btn{
+  margin-top:12px;
+  padding:10px 14px;
+  border:0;
+  border-radius:9px;
+  background:#ffb718;
+  color:#101a30;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.save-summary-btn{
+  margin-top:10px;
+  padding:11px 16px;
+  border:0;
+  border-radius:9px;
+  background:#65e572;
+  color:#101a30;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.summary-date-input{
+  width:80px;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #2d3b55;
+  background:#101a30;
+  color:white;
+  margin-bottom:12px;
+}
+</style>
 </head>
 
 <body>
@@ -15,81 +112,10 @@
     <p>Admin Dashboard</p>
   </div>
 
-  <a class="admin-link" href="index.html">Public Site</a>
+  <a class="admin-link" href="index.html">
+    Public Site
+  </a>
 </header>
-
-
-<!-- ================= RESULT SUMMARY CONTROL ================= -->
-
-<section class="section">
-
-  <div class="section-title">
-    <span>✏️ EDIT RESULT TABLE</span>
-  </div>
-
-  <div class="result-editor">
-
-    <label>DATE</label>
-
-    <input
-      id="summaryDate"
-      type="number"
-      min="1"
-      max="31"
-      placeholder="Example: 29"
-    >
-
-    <div class="summary-input-grid">
-
-      <div>
-        <label>SM</label>
-        <input id="summarySM" type="text">
-      </div>
-
-      <div>
-        <label>DB</label>
-        <input id="summaryDB" type="text">
-      </div>
-
-      <div>
-        <label>SG</label>
-        <input id="summarySG" type="text">
-      </div>
-
-      <div>
-        <label>FB</label>
-        <input id="summaryFB" type="text">
-      </div>
-
-      <div>
-        <label>GB</label>
-        <input id="summaryGB" type="text">
-      </div>
-
-      <div>
-        <label>GL</label>
-        <input id="summaryGL" type="text">
-      </div>
-
-      <div>
-        <label>DS</label>
-        <input id="summaryDS" type="text">
-      </div>
-
-    </div>
-
-    <button
-      type="button"
-      id="saveSummaryBtn"
-      onclick="saveResultSummary()"
-    >
-      💾 SAVE RESULT TABLE
-    </button>
-
-  </div>
-
-</section>
-
 
 <main>
 
@@ -132,231 +158,272 @@
 
 <section id="dashboard" hidden>
 
-  <section class="notes">
+<!-- ================= RESULT SUMMARY ================= -->
 
-    <h2>Manage Announcements</h2>
+<section class="section">
 
-    <p>
-      Changes are stored in the shared Firebase database
-      and appear on the public site for everyone.
-    </p>
+  <div class="section-title">
+    <span>✏️ EDIT RESULT TABLE</span>
+  </div>
 
-  </section>
+  <div class="result-editor">
 
+    <label>DATE</label>
 
-  <!-- ================= ADD / EDIT BOX ================= -->
+    <br>
 
-  <section class="section">
+    <input
+      id="summaryDate"
+      class="summary-date-input"
+      type="number"
+      min="1"
+      max="31"
+      placeholder="29"
+    >
 
-    <div class="section-title">
-      <span>ADD / EDIT BOX</span>
+    <div class="summary-scroll">
+
+      <table class="summary-editor-table">
+
+        <thead>
+          <tr id="summaryHeader"></tr>
+        </thead>
+
+        <tbody>
+          <tr id="summaryInputs"></tr>
+        </tbody>
+
+      </table>
+
     </div>
 
-    <form id="boxForm" class="form">
+    <button
+      type="button"
+      class="add-column-btn"
+      id="addColumnBtn"
+    >
+      ➕ Add Column
+    </button>
 
-      <input
-        type="hidden"
-        id="editId"
-      >
+    <br>
 
-      <input
-        id="name"
-        placeholder="Name / announcement"
-        required
-      >
+    <button
+      type="button"
+      class="save-summary-btn"
+      id="saveSummaryBtn"
+    >
+      💾 SAVE RESULT TABLE
+    </button>
 
-      <input
-        id="time"
-        type="time"
-        required
-      >
+  </div>
 
-      <input
-        id="value"
-        placeholder="Result / status text"
-        required
-      >
-
-      <select id="section">
-
-        <option value="live">
-          LIVE
-        </option>
-
-        <option value="next">
-          NEXT
-        </option>
-
-      </select>
-
-      <button
-        type="submit"
-        id="saveBtn"
-      >
-        Add Box
-      </button>
-
-      <button
-        type="button"
-        id="cancelBtn"
-        class="secondary"
-        hidden
-      >
-        Cancel Edit
-      </button>
-
-    </form>
-
-  </section>
+</section>
 
 
-  <!-- ================= LIVE BOXES ================= -->
+<!-- ================= INFO ================= -->
 
-  <section class="section">
+<section class="notes">
 
-    <div class="section-title">
-      <span>LIVE BOXES</span>
-    </div>
+  <h2>Manage Announcements</h2>
 
-    <div
-      id="liveAdmin"
-      class="cards"
-    ></div>
+  <p>
+    Changes are stored in Firebase and appear on the public site.
+  </p>
 
-  </section>
+</section>
 
 
-  <!-- ================= NEXT BOXES ================= -->
+<!-- ================= ADD / EDIT BOX ================= -->
 
-  <section class="section">
+<section class="section">
 
-    <div class="section-title">
-      <span>NEXT BOXES</span>
-    </div>
+  <div class="section-title">
+    <span>ADD / EDIT BOX</span>
+  </div>
 
-    <div
-      id="nextAdmin"
-      class="cards"
-    ></div>
+  <form id="boxForm" class="form">
 
-  </section>
+    <input
+      type="hidden"
+      id="editId"
+    >
 
+    <input
+      id="name"
+      placeholder="Name / announcement"
+      required
+    >
 
-  <!-- ================= PREVIOUS RECORDS MANAGER ================= -->
+    <input
+      id="time"
+      type="time"
+      required
+    >
 
-  <section class="section">
+    <input
+      id="value"
+      placeholder="Result / status text"
+      required
+    >
 
-    <div class="section-title">
-      <span>PREVIOUS RECORDS</span>
-    </div>
+    <select id="section">
 
-    <form id="recordForm" class="form">
+      <option value="live">LIVE</option>
+      <option value="next">NEXT</option>
 
-      <input
-        type="hidden"
-        id="recordEditIndex"
-        value=""
-      >
+    </select>
 
-      <input
-        id="recordMonth"
-        type="text"
-        placeholder="Month (example: August 2026)"
-        required
-      >
+    <button
+      type="submit"
+      id="saveBtn"
+    >
+      Add Box
+    </button>
 
-      <input
-        id="recordDate"
-        type="date"
-        required
-      >
+    <button
+      type="button"
+      id="cancelBtn"
+      class="secondary"
+      hidden
+    >
+      Cancel Edit
+    </button>
 
-      <input
-        id="recordStatus"
-        type="text"
-        placeholder="Status (example: Published)"
-        required
-      >
+  </form>
 
-      <input
-        id="recordValue"
-        type="text"
-        placeholder="Result / Value"
-        required
-      >
-
-      <button
-        type="submit"
-        id="recordSaveBtn"
-      >
-        Add Record
-      </button>
-
-      <button
-        type="button"
-        id="recordCancelBtn"
-        class="secondary"
-        hidden
-      >
-        Cancel Edit
-      </button>
-
-    </form>
-
-    <div
-      id="adminRecords"
-      class="records"
-    ></div>
-
-    <p id="recordMsg"></p>
-
-  </section>
+</section>
 
 
-  <!-- ================= CHANGE PASSWORD ================= -->
+<!-- ================= LIVE ================= -->
 
-  <section class="section">
+<section class="section">
 
-    <div class="section-title">
-      <span>CHANGE PASSWORD</span>
-    </div>
+  <div class="section-title">
+    <span>LIVE BOXES</span>
+  </div>
 
-    <form id="pwForm" class="form">
+  <div
+    id="liveAdmin"
+    class="cards"
+  ></div>
 
-      <input
-        id="newPassword"
-        type="password"
-        minlength="6"
-        placeholder="New password (6+ characters)"
-        required
-      >
-
-      <button type="submit">
-        Change Password
-      </button>
-
-      <p id="pwMsg"></p>
-
-    </form>
-
-  </section>
+</section>
 
 
-  <!-- ================= LOGOUT ================= -->
+<!-- ================= NEXT ================= -->
 
-  <button
-    id="logout"
-    class="secondary"
-  >
-    Logout
-  </button>
+<section class="section">
+
+  <div class="section-title">
+    <span>NEXT BOXES</span>
+  </div>
+
+  <div
+    id="nextAdmin"
+    class="cards"
+  ></div>
+
+</section>
+
+
+<!-- ================= PREVIOUS RECORDS ================= -->
+
+<section class="section">
+
+  <div class="section-title">
+    <span>PREVIOUS RECORDS</span>
+  </div>
+
+  <form id="recordForm" class="form">
+
+    <input
+      type="hidden"
+      id="recordEditIndex"
+    >
+
+    <input
+      id="recordMonth"
+      type="text"
+      placeholder="Month"
+      required
+    >
+
+    <input
+      id="recordDate"
+      type="date"
+      required
+    >
+
+    <input
+      id="recordStatus"
+      type="text"
+      placeholder="Status"
+      required
+    >
+
+    <input
+      id="recordValue"
+      type="text"
+      placeholder="Result / Value"
+      required
+    >
+
+    <button type="submit">
+      Add Record
+    </button>
+
+  </form>
+
+  <div
+    id="adminRecords"
+    class="records"
+  ></div>
+
+  <p id="recordMsg"></p>
+
+</section>
+
+
+<!-- ================= PASSWORD ================= -->
+
+<section class="section">
+
+  <div class="section-title">
+    <span>CHANGE PASSWORD</span>
+  </div>
+
+  <form id="pwForm" class="form">
+
+    <input
+      id="newPassword"
+      type="password"
+      minlength="6"
+      placeholder="New password"
+      required
+    >
+
+    <button type="submit">
+      Change Password
+    </button>
+
+    <p id="pwMsg"></p>
+
+  </form>
+
+</section>
+
+
+<button
+  id="logout"
+  class="secondary"
+>
+  Logout
+</button>
 
 </section>
 
 </main>
 
-
-<!-- ================= FIREBASE ================= -->
 
 <script type="module">
 
@@ -375,7 +442,9 @@ import {
 } from "./firebase.js";
 
 
-/* ================= DATA ================= */
+/* =====================================================
+   DATA
+===================================================== */
 
 let data = {
   live: [],
@@ -384,42 +453,53 @@ let data = {
 };
 
 
-/* ================= ADMIN EMAIL ================= */
+/* =====================================================
+   RESULT SUMMARY COLUMNS
+===================================================== */
 
-const ADMIN_EMAIL =
-  "mk14641465@gmail.com";
+let summaryColumns = [
+  "SM",
+  "DB",
+  "SG",
+  "FB",
+  "GB",
+  "GL",
+  "DS"
+];
 
 
-/* ================= SHORT FUNCTION ================= */
+/* =====================================================
+   ELEMENT
+===================================================== */
 
 const $ =
   id => document.getElementById(id);
 
 
-/* ================= HTML ESCAPE ================= */
+/* =====================================================
+   ESCAPE
+===================================================== */
 
 function esc(value){
 
   return String(value ?? "")
     .replace(
       /[&<>"']/g,
-      function(m){
-
-        return {
-          "&":"&amp;",
-          "<":"&lt;",
-          ">":"&gt;",
-          '"':"&quot;",
-          "'":"&#039;"
-        }[m];
-
-      }
+      m => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+      }[m])
     );
 
 }
 
 
-/* ================= 24 HOUR TIME ================= */
+/* =====================================================
+   TIME
+===================================================== */
 
 function to24(time){
 
@@ -439,22 +519,11 @@ function to24(time){
   const ampm =
     m[3].toUpperCase();
 
-
-  if(
-    ampm === "PM" &&
-    hour < 12
-  ){
+  if(ampm === "PM" && hour < 12)
     hour += 12;
-  }
 
-
-  if(
-    ampm === "AM" &&
-    hour === 12
-  ){
+  if(ampm === "AM" && hour === 12)
     hour = 0;
-  }
-
 
   return (
     String(hour).padStart(2,"0") +
@@ -464,8 +533,6 @@ function to24(time){
 
 }
 
-
-/* ================= 12 HOUR TIME ================= */
 
 function to12(time){
 
@@ -488,7 +555,6 @@ function to12(time){
   hour =
     hour % 12 || 12;
 
-
   return (
     String(hour).padStart(2,"0") +
     ":" +
@@ -500,24 +566,464 @@ function to12(time){
 }
 
 
-/* ================= RENDER BOXES ================= */
+/* =====================================================
+   RESULT SUMMARY EDITOR
+===================================================== */
+
+function renderSummaryEditor(){
+
+  const header =
+    $("summaryHeader");
+
+  const inputs =
+    $("summaryInputs");
+
+  if(!header || !inputs)
+    return;
+
+
+  header.innerHTML =
+    summaryColumns.map(
+      (column,index) => `
+
+        <th>
+
+          <div class="column-controls">
+
+            <button
+              type="button"
+              onclick="moveColumn(${index},-1)"
+              ${index === 0 ? "disabled" : ""}
+            >
+              ◀
+            </button>
+
+            <button
+              type="button"
+              onclick="moveColumn(${index},1)"
+              ${index === summaryColumns.length-1 ? "disabled" : ""}
+            >
+              ▶
+            </button>
+
+            <button
+              type="button"
+              onclick="deleteColumn(${index})"
+            >
+              ✕
+            </button>
+
+          </div>
+
+          <input
+            type="text"
+            value="${esc(column)}"
+            data-column-index="${index}"
+            class="column-name-input"
+          >
+
+        </th>
+
+      `
+    )
+    .join("");
+
+
+  inputs.innerHTML =
+    summaryColumns.map(
+      (column,index) => `
+
+        <td>
+
+          <input
+            type="text"
+            id="summaryValue_${index}"
+            placeholder="${esc(column)}"
+          >
+
+        </td>
+
+      `
+    )
+    .join("");
+
+}
+
+
+/* =====================================================
+   SAVE COLUMN NAMES FROM INPUTS
+===================================================== */
+
+function readColumnNames(){
+
+  const fields =
+    document.querySelectorAll(
+      ".column-name-input"
+    );
+
+  fields.forEach(
+    (field,index) => {
+
+      const value =
+        field.value.trim();
+
+      if(value){
+        summaryColumns[index] =
+          value;
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   MOVE COLUMN
+===================================================== */
+
+window.moveColumn =
+function(index,direction){
+
+  readColumnNames();
+
+  const newIndex =
+    index + direction;
+
+  if(
+    newIndex < 0 ||
+    newIndex >= summaryColumns.length
+  ){
+    return;
+  }
+
+
+  const temp =
+    summaryColumns[index];
+
+  summaryColumns[index] =
+    summaryColumns[newIndex];
+
+  summaryColumns[newIndex] =
+    temp;
+
+
+  renderSummaryEditor();
+
+};
+
+
+/* =====================================================
+   DELETE COLUMN
+===================================================== */
+
+window.deleteColumn =
+function(index){
+
+  readColumnNames();
+
+  if(summaryColumns.length <= 1){
+
+    alert(
+      "Kam se kam 1 column rehna chahiye."
+    );
+
+    return;
+
+  }
+
+
+  const name =
+    summaryColumns[index];
+
+
+  const ok =
+    confirm(
+      "Column '" +
+      name +
+      "' delete karna hai?"
+    );
+
+
+  if(!ok)
+    return;
+
+
+  summaryColumns.splice(
+    index,
+    1
+  );
+
+
+  renderSummaryEditor();
+
+};
+
+
+/* =====================================================
+   ADD COLUMN
+===================================================== */
+
+$("addColumnBtn").onclick =
+function(){
+
+  readColumnNames();
+
+
+  const name =
+    prompt(
+      "New column ka naam daalo:",
+      "NEW"
+    );
+
+
+  if(!name)
+    return;
+
+
+  const clean =
+    name.trim();
+
+
+  if(!clean)
+    return;
+
+
+  summaryColumns.push(
+    clean
+  );
+
+
+  renderSummaryEditor();
+
+};
+
+
+/* =====================================================
+   SAVE RESULT SUMMARY
+===================================================== */
+
+$("saveSummaryBtn").onclick =
+async function(){
+
+  const user =
+    auth.currentUser;
+
+
+  if(!user){
+
+    alert(
+      "Pehle Admin login karo."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    user.email &&
+    user.email
+      .toLowerCase()
+      .endsWith("@mk-time-staff.com")
+  ){
+
+    alert(
+      "Sirf Admin Result Table edit kar sakta hai."
+    );
+
+    return;
+
+  }
+
+
+  readColumnNames();
+
+
+  const date =
+    $("summaryDate")
+      .value
+      .trim();
+
+
+  const day =
+    Number(date);
+
+
+  if(
+    !Number.isInteger(day) ||
+    day < 1 ||
+    day > 31
+  ){
+
+    alert(
+      "Date 1 se 31 ke beech daalo."
+    );
+
+    return;
+
+  }
+
+
+  const values = {};
+
+
+  summaryColumns.forEach(
+    (column,index) => {
+
+      const input =
+        $("summaryValue_" + index);
+
+      values[column] =
+        input
+          ? input.value.trim()
+          : "";
+
+    }
+  );
+
+
+  const resultRef =
+    doc(
+      db,
+      "resultSummary",
+      "current"
+    );
+
+
+  const btn =
+    $("saveSummaryBtn");
+
+
+  btn.disabled =
+    true;
+
+  btn.textContent =
+    "Saving...";
+
+
+  try{
+
+    const snap =
+      await getDoc(
+        resultRef
+      );
+
+
+    const oldData =
+      snap.exists()
+        ? snap.data()
+        : {};
+
+
+    const records =
+      oldData.records || {};
+
+
+    /*
+      Existing dates safe rahengi.
+      Sirf selected date update hogi.
+    */
+
+    records[String(day)] =
+      values;
+
+
+    const month =
+      oldData.month ||
+      new Date().toLocaleString(
+        "en-US",
+        {
+          month:"long",
+          year:"numeric"
+        }
+      );
+
+
+    await setDoc(
+      resultRef,
+      {
+        month:month,
+        records:records,
+        columns:summaryColumns,
+        updatedAt:
+          new Date().toISOString()
+      },
+      {
+        merge:true
+      }
+    );
+
+
+    alert(
+      "RESULT " +
+      day +
+      " SAVE HO GAYA ✅"
+    );
+
+
+    summaryColumns.forEach(
+      (column,index) => {
+
+        const input =
+          $("summaryValue_" + index);
+
+        if(input)
+          input.value = "";
+
+      }
+    );
+
+
+    $("summaryDate").value =
+      "";
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    alert(
+      "Result save nahi hua ❌"
+    );
+
+  }
+
+  finally{
+
+    btn.disabled =
+      false;
+
+    btn.textContent =
+      "💾 SAVE RESULT TABLE";
+
+  }
+
+};
+
+
+/* =====================================================
+   RENDER BOXES
+===================================================== */
 
 function render(){
 
   ["live","next"].forEach(
-    function(section){
+    section => {
 
       const container =
         $(section + "Admin");
+
+      if(!container)
+        return;
+
 
       const boxes =
         data[section] || [];
 
 
-      if(!container) return;
-
-
-      if(boxes.length === 0){
+      if(!boxes.length){
 
         container.innerHTML =
           '<p class="empty">No boxes.</p>';
@@ -529,66 +1035,63 @@ function render(){
 
       container.innerHTML =
         boxes.map(
-          function(box){
+          box => `
 
-            return `
+            <article class="card admin-card">
 
-              <article class="card admin-card">
+              <div>
 
-                <div>
+                <small>
+                  ${esc(box.time)}
+                </small>
 
-                  <small>
-                    ${esc(box.time)}
-                  </small>
+                <h3>
+                  ${esc(box.name)}
+                </h3>
 
-                  <h3>
-                    ${esc(box.name)}
-                  </h3>
+                <p>
+                  ${esc(box.value)}
+                  ${
+                    box.locked
+                      ? " • LOCKED"
+                      : ""
+                  }
+                </p>
 
-                  <p>
-                    ${esc(box.value)}
-                    ${
-                      box.locked
-                        ? " • LOCKED"
-                        : ""
-                    }
-                  </p>
+              </div>
 
-                </div>
+              <div class="actions">
 
-                <div class="actions">
+                <button
+                  onclick="editBox('${esc(box.id)}','${section}')"
+                >
+                  Edit
+                </button>
 
-                  <button
-                    onclick="editBox('${esc(box.id)}','${section}')"
-                  >
-                    Edit
-                  </button>
+                <button
+                  onclick="toggleLock('${esc(box.id)}','${section}')"
+                >
+                  ${
+                    box.locked
+                      ? "Unlock"
+                      : "Lock"
+                  }
+                </button>
 
-                  <button
-                    onclick="toggleLock('${esc(box.id)}','${section}')"
-                  >
-                    ${
-                      box.locked
-                        ? "Unlock"
-                        : "Lock"
-                    }
-                  </button>
+                <button
+                  onclick="deleteBox('${esc(box.id)}','${section}')"
+                  class="danger"
+                >
+                  Delete
+                </button>
 
-                  <button
-                    onclick="deleteBox('${esc(box.id)}','${section}')"
-                    class="danger"
-                  >
-                    Delete
-                  </button>
+              </div>
 
-                </div>
+            </article>
 
-              </article>
-
-            `;
-
-          }
-        ).join("");
+          `
+        )
+        .join("");
 
     }
   );
@@ -596,7 +1099,9 @@ function render(){
 }
 
 
-/* ================= SAVE SITE DATA ================= */
+/* =====================================================
+   SAVE DATA
+===================================================== */
 
 async function saveData(){
 
@@ -610,23 +1115,23 @@ async function saveData(){
 }
 
 
-/* ================= EDIT BOX ================= */
+/* =====================================================
+   EDIT BOX
+===================================================== */
 
 window.editBox =
 function(id,section){
 
-  const boxes =
-    data[section] || [];
-
-
   const box =
-    boxes.find(
-      item =>
-        item.id === id
-    );
+    (data[section] || [])
+      .find(
+        item =>
+          item.id === id
+      );
 
 
-  if(!box) return;
+  if(!box)
+    return;
 
 
   $("editId").value =
@@ -650,7 +1155,6 @@ function(id,section){
   $("cancelBtn").hidden =
     false;
 
-
   window.scrollTo({
     top:0,
     behavior:"smooth"
@@ -659,23 +1163,23 @@ function(id,section){
 };
 
 
-/* ================= LOCK ================= */
+/* =====================================================
+   LOCK
+===================================================== */
 
 window.toggleLock =
 async function(id,section){
 
-  const boxes =
-    data[section] || [];
-
-
   const box =
-    boxes.find(
-      item =>
-        item.id === id
-    );
+    (data[section] || [])
+      .find(
+        item =>
+          item.id === id
+      );
 
 
-  if(!box) return;
+  if(!box)
+    return;
 
 
   box.locked =
@@ -687,28 +1191,28 @@ async function(id,section){
 };
 
 
-/* ================= DELETE BOX ================= */
+/* =====================================================
+   DELETE BOX
+===================================================== */
 
 window.deleteBox =
 async function(id,section){
 
-  const ok =
-    confirm(
+  if(
+    !confirm(
       "Delete this box?"
-    );
-
-
-  if(!ok) return;
+    )
+  ){
+    return;
+  }
 
 
   data[section] =
-    (
-      data[section] || []
-    )
-    .filter(
-      box =>
-        box.id !== id
-    );
+    (data[section] || [])
+      .filter(
+        box =>
+          box.id !== id
+      );
 
 
   await saveData();
@@ -716,7 +1220,9 @@ async function(id,section){
 };
 
 
-/* ================= RESET FORM ================= */
+/* =====================================================
+   RESET
+===================================================== */
 
 function resetForm(){
 
@@ -744,7 +1250,9 @@ function resetForm(){
 }
 
 
-/* ================= ADD / EDIT BOX ================= */
+/* =====================================================
+   ADD / EDIT
+===================================================== */
 
 $("boxForm").onsubmit =
 async function(event){
@@ -777,8 +1285,6 @@ async function(event){
   };
 
 
-  /* EDIT */
-
   if(editId){
 
     let oldBox =
@@ -791,13 +1297,11 @@ async function(event){
     ){
 
       const index =
-        (
-          data[sec] || []
-        )
-        .findIndex(
-          item =>
-            item.id === editId
-        );
+        (data[sec] || [])
+          .findIndex(
+            item =>
+              item.id === editId
+          );
 
 
       if(index !== -1){
@@ -826,9 +1330,6 @@ async function(event){
         : false;
 
   }
-
-
-  /* ADD */
 
   else{
 
@@ -867,7 +1368,7 @@ async function(event){
     console.error(error);
 
     alert(
-      "Box save nahi hua. Firebase rules check karo."
+      "Box save nahi hua."
     );
 
   }
@@ -875,7 +1376,9 @@ async function(event){
 };
 
 
-/* ================= CANCEL ================= */
+/* =====================================================
+   CANCEL
+===================================================== */
 
 $("cancelBtn").onclick =
 function(){
@@ -886,275 +1389,8 @@ function(){
 
 
 /* =====================================================
-   RESULT SUMMARY
-   ===================================================== */
-
-/*
-   Firebase structure:
-
-   resultSummary
-       └── current
-             ├── month: "August 2026"
-             └── records
-                   ├── 29
-                   │    ├── SM
-                   │    ├── DB
-                   │    └── ...
-                   ├── 30
-                   └── 31
-*/
-
-
-window.saveResultSummary =
-async function(){
-
-  const user = auth.currentUser;
-
-const isStaffAccount =
-  user &&
-  user.email &&
-  user.email
-    .toLowerCase()
-    .endsWith("@mk-time-staff.com");
-
-if(!user || isStaffAccount){
-
-  alert(
-    "Sirf Admin Result Table edit kar sakta hai."
-  );
-
-  return;
-
-}
-
-
-  const date =
-    $("summaryDate")
-      .value
-      .trim();
-
-
-  if(!date){
-
-    alert(
-      "Date daalo."
-    );
-
-    return;
-
-  }
-
-
-  const day =
-    Number(date);
-
-
-  if(
-    !Number.isInteger(day) ||
-    day < 1 ||
-    day > 31
-  ){
-
-    alert(
-      "Date 1 se 31 ke beech honi chahiye."
-    );
-
-    return;
-
-  }
-
-
-  const now =
-    new Date();
-
-
-  const month =
-    now.toLocaleString(
-      "en-US",
-      {
-        month:"long",
-        year:"numeric"
-      }
-    );
-
-
-  const summary = {
-
-    SM:
-      $("summarySM")
-        .value
-        .trim(),
-
-    DB:
-      $("summaryDB")
-        .value
-        .trim(),
-
-    SG:
-      $("summarySG")
-        .value
-        .trim(),
-
-    FB:
-      $("summaryFB")
-        .value
-        .trim(),
-
-    GB:
-      $("summaryGB")
-        .value
-        .trim(),
-
-    GL:
-      $("summaryGL")
-        .value
-        .trim(),
-
-    DS:
-      $("summaryDS")
-        .value
-        .trim()
-
-  };
-
-
-  const resultRef =
-    doc(
-      db,
-      "resultSummary",
-      "current"
-    );
-
-
-  const btn =
-    $("saveSummaryBtn");
-
-
-  if(btn){
-
-    btn.disabled =
-      true;
-
-    btn.textContent =
-      "Saving...";
-
-  }
-
-
-  try{
-
-    const snap =
-      await getDoc(
-        resultRef
-      );
-
-
-    let oldData =
-      snap.exists()
-        ? snap.data()
-        : {};
-
-
-    let records =
-      oldData.records || {};
-
-
-    /*
-       IMPORTANT:
-       Sirf selected date update hogi.
-       Baaki dates safe rahengi.
-    */
-
-    records[String(day)] =
-      summary;
-
-
-    await setDoc(
-      resultRef,
-      {
-
-        month:
-          month,
-
-        records:
-          records,
-
-        updatedAt:
-          new Date().toISOString()
-
-      },
-      {
-        merge:true
-      }
-    );
-
-
-    alert(
-      "RESULT " +
-      day +
-      " SAVE HO GAYA ✅"
-    );
-
-
-    /*
-       Form clear.
-    */
-
-    $("summarySM").value =
-      "";
-
-    $("summaryDB").value =
-      "";
-
-    $("summarySG").value =
-      "";
-
-    $("summaryFB").value =
-      "";
-
-    $("summaryGB").value =
-      "";
-
-    $("summaryGL").value =
-      "";
-
-    $("summaryDS").value =
-      "";
-
-  }
-
-  catch(error){
-
-    console.error(
-      "Result save error:",
-      error
-    );
-
-
-    alert(
-      "Result save nahi hua ❌"
-    );
-
-  }
-
-  finally{
-
-    if(btn){
-
-      btn.disabled =
-        false;
-
-      btn.textContent =
-        "💾 SAVE RESULT TABLE";
-
-    }
-
-  }
-
-};
-
-
-/* ================= LOGIN ================= */
+   LOGIN
+===================================================== */
 
 $("loginForm").onsubmit =
 async function(event){
@@ -1210,10 +1446,8 @@ async function(event){
 
   event.preventDefault();
 
-
   const user =
     auth.currentUser;
-
 
   if(!user){
 
@@ -1224,10 +1458,8 @@ async function(event){
 
   }
 
-
   const newPassword =
     $("newPassword").value;
-
 
   try{
 
@@ -1235,7 +1467,6 @@ async function(event){
       user,
       newPassword
     );
-
 
     $("pwMsg").textContent =
       "Password changed successfully.";
@@ -1269,7 +1500,6 @@ onAuthStateChanged(
     $("dashboard").hidden =
       !user;
 
-
     if(user){
 
       onSnapshot(
@@ -1277,9 +1507,7 @@ onAuthStateChanged(
 
         function(snapshot){
 
-          if(
-            snapshot.exists()
-          ){
+          if(snapshot.exists()){
 
             data = {
 
@@ -1304,7 +1532,6 @@ onAuthStateChanged(
             };
 
           }
-
 
           render();
 
@@ -1333,4 +1560,4 @@ render();
 </script>
 
 </body>
-  </html>
+</html>
