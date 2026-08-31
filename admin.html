@@ -159,57 +159,55 @@
     <span>✏️ EDIT RESULT TABLE</span>
   </div>
 
-<div class="result-editor">
+  <div class="result-editor">
 
-  <label>DATE</label>
-  <br>
+    <label>DATE</label>
+    <br>
 
-  <input
-    id="summaryDate"
-    class="summary-date-input"
-    type="number"
-    min="1"
-    max="31"
-    placeholder="29"
-  >
+    <input
+      id="summaryDate"
+      class="summary-date-input"
+      type="number"
+      min="1"
+      max="31"
+      placeholder="29"
+    >
 
-  <div class="summary-scroll">
+    <div class="summary-scroll">
 
-    <table class="summary-editor-table">
+      <table class="summary-editor-table">
 
-      <thead>
-        <tr id="summaryHeader"></tr>
-      </thead>
+        <thead>
+          <tr id="summaryHeader"></tr>
+        </thead>
 
-      <tbody>
-        <tr id="summaryInputs"></tr>
-      </tbody>
+        <tbody>
+          <tr id="summaryInputs"></tr>
+        </tbody>
 
-    </table>
+      </table>
 
-  </div>
-
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+    </div>
 
     <button
       type="button"
-      id="addSummaryColumn"
       class="add-column-btn"
+      id="addColumnBtn"
     >
       ➕ Add Column
     </button>
 
+    <br>
+
     <button
       type="button"
-      id="saveSummaryBtn"
       class="save-summary-btn"
+      id="saveSummaryBtn"
     >
       💾 SAVE RESULT TABLE
     </button>
 
   </div>
-
-</div>
 
 </section>
 
@@ -515,53 +513,81 @@ function to12(time){
 
 function renderSummaryEditor(){
 
-  const header = $("summaryHeader");
-  const inputs = $("summaryInputs");
+  const header =
+    $("summaryHeader");
 
-  if(!header || !inputs) return;
+  const inputs =
+    $("summaryInputs");
 
-  header.innerHTML = summaryColumns.map((column,index) => `
-    <th>
-      <div class="summary-column-head">
-        <input
-          type="text"
-          class="column-name-input"
-          value="${esc(column)}"
-          onchange="updateSummaryColumn(${index}, this.value)"
-        >
+  if(!header || !inputs)
+    return;
 
-        <button
-          type="button"
-          onclick="deleteSummaryColumn(${index})"
-        >✕</button>
-      </div>
-    </th>
-  `).join("");
+  header.innerHTML =
+    summaryColumns.map(
+      (column,index) => `
 
-  const rows = data.summaryRows || [];
+        <th>
 
-  inputs.innerHTML = rows.map((row,rowIndex) => `
-    <tr>
-      ${summaryColumns.map((column,colIndex) => `
-        <td>
+          <div class="column-controls">
+
+            <button
+              type="button"
+              onclick="moveColumn(${index},-1)"
+              ${index === 0 ? "disabled" : ""}
+            >
+              ◀️
+            </button>
+
+            <button
+              type="button"
+              onclick="moveColumn(${index},1)"
+              ${index === summaryColumns.length-1 ? "disabled" : ""}
+            >
+              ▶️
+            </button>
+
+            <button
+              type="button"
+              onclick="deleteColumn(${index})"
+            >
+              ✕
+            </button>
+
+          </div>
+
           <input
             type="text"
-            value="${esc(row[colIndex] || "")}"
-            placeholder="${esc(column)}"
-            onchange="updateSummaryValue(${rowIndex},${colIndex},this.value)"
+            value="${esc(column)}"
+            data-column-index="${index}"
+            class="column-name-input"
           >
-        </td>
-      `).join("")}
 
-      <td>
-        <button
-          type="button"
-          onclick="deleteSummaryRow(${rowIndex})"
-        >🗑️</button>
-      </td>
-    </tr>
-  `).join("");
-  }
+        </th>
+
+      `
+    )
+    .join("");
+
+  inputs.innerHTML =
+    summaryColumns.map(
+      (column,index) => `
+
+        <td>
+
+          <input
+            type="text"
+            id="summaryValue_${index}"
+            placeholder="${esc(column)}"
+          >
+
+        </td>
+
+      `
+    )
+    .join("");
+
+}
+
 function readColumnNames(){
 
   const fields =
@@ -650,7 +676,7 @@ function(index){
 
 };
 
-$("addSummaryColumn").onclick =
+$("addColumnBtn").onclick =
 function(){
 
   readColumnNames();
@@ -1397,4 +1423,4 @@ render();
 
 </body>
 
-</html>
+  </html>
