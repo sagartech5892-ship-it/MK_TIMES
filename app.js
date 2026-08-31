@@ -470,7 +470,7 @@ async function loadResultSummary(){
 
       summaryData = {
 
-        month:d.month || "",
+        month: "September",
 
         records:d.records || {},
 
