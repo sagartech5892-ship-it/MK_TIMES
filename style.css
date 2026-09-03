@@ -825,3 +825,287 @@ footer{
   }
 
 }
+/* =====================================================
+   PURPLE NEON LIVE RESULT CARDS
+===================================================== */
+
+.cards{
+  display:grid;
+  gap:14px;
+}
+
+/* Main card */
+.card{
+  position:relative !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+
+  min-height:118px !important;
+  padding:18px 20px !important;
+
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(145, 50, 255, .12),
+      rgba(8, 8, 25, .96) 70%
+    ) !important;
+
+  border:2px solid #9b32ff !important;
+  border-radius:18px !important;
+
+  box-shadow:
+    0 0 8px rgba(155, 50, 255, .55),
+    0 0 22px rgba(155, 50, 255, .25),
+    inset 0 0 25px rgba(155, 50, 255, .08) !important;
+
+  overflow:hidden !important;
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease !important;
+}
+
+/* Purple glow on hover */
+.card:hover{
+  transform:translateY(-2px) !important;
+
+  box-shadow:
+    0 0 12px rgba(155, 50, 255, .8),
+    0 0 35px rgba(155, 50, 255, .35),
+    inset 0 0 30px rgba(155, 50, 255, .12) !important;
+}
+
+/* Left side */
+.card > div:first-child{
+  min-width:0;
+}
+
+/* Time */
+.card small{
+  display:block !important;
+
+  color:#c46cff !important;
+
+  font-size:17px !important;
+  font-weight:900 !important;
+
+  margin-bottom:7px !important;
+
+  text-shadow:
+    0 0 7px rgba(196,108,255,.8) !important;
+}
+
+/* Result name */
+.card h3{
+  margin:0 !important;
+
+  color:#f7f3ff !important;
+
+  font-size:25px !important;
+  font-weight:900 !important;
+
+  letter-spacing:.5px !important;
+}
+
+/* LIVE text */
+.card p{
+  margin:7px 0 0 !important;
+
+  color:#c46cff !important;
+
+  font-size:15px !important;
+  font-weight:800 !important;
+
+  text-shadow:
+    0 0 8px rgba(196,108,255,.8) !important;
+}
+
+/* LIVE dot */
+.card p::first-letter{
+  color:#b84cff !important;
+}
+
+/* Result number */
+.card strong{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  min-width:145px !important;
+  height:82px !important;
+
+  padding:5px 18px !important;
+
+  color:#d88aff !important;
+
+  font-size:58px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+
+  background:rgba(85,20,130,.16) !important;
+
+  border:2px solid #9b32ff !important;
+  border-radius:15px !important;
+
+  text-shadow:
+    0 0 5px #fff,
+    0 0 12px #c04cff,
+    0 0 25px #9b32ff !important;
+
+  box-shadow:
+    inset 0 0 15px rgba(155,50,255,.12),
+    0 0 10px rgba(155,50,255,.35) !important;
+}
+
+/* NEW ribbon */
+.card::after{
+  content:"NEW";
+
+  position:absolute;
+
+  top:10px;
+  right:-30px;
+
+  width:100px;
+
+  padding:4px 0;
+
+  background:#c95cff;
+  color:#160021;
+
+  text-align:center;
+
+  font-size:12px;
+  font-weight:900;
+
+  transform:rotate(45deg);
+
+  box-shadow:
+    0 0 10px rgba(201,92,255,.7);
+
+  z-index:5;
+}
+
+/* =====================================================
+   LIVE ANIMATION
+===================================================== */
+
+@keyframes purpleLiveGlow{
+
+  0%{
+    box-shadow:
+      0 0 7px rgba(155,50,255,.45),
+      0 0 18px rgba(155,50,255,.18),
+      inset 0 0 20px rgba(155,50,255,.05);
+  }
+
+  50%{
+    box-shadow:
+      0 0 13px rgba(190,80,255,.75),
+      0 0 30px rgba(155,50,255,.35),
+      inset 0 0 25px rgba(155,50,255,.10);
+  }
+
+  100%{
+    box-shadow:
+      0 0 7px rgba(155,50,255,.45),
+      0 0 18px rgba(155,50,255,.18),
+      inset 0 0 20px rgba(155,50,255,.05);
+  }
+
+}
+
+.card{
+  animation:purpleLiveGlow 2.5s ease-in-out infinite !important;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media(max-width:520px){
+
+  .cards{
+    gap:12px !important;
+  }
+
+  .card{
+    min-height:112px !important;
+
+    padding:16px 14px !important;
+
+    border-radius:17px !important;
+  }
+
+  .card small{
+    font-size:15px !important;
+    margin-bottom:6px !important;
+  }
+
+  .card h3{
+    font-size:21px !important;
+  }
+
+  .card p{
+    font-size:14px !important;
+    margin-top:6px !important;
+  }
+
+  .card strong{
+    min-width:105px !important;
+    height:70px !important;
+
+    padding:4px 12px !important;
+
+    font-size:47px !important;
+
+    border-radius:13px !important;
+  }
+
+  .card::after{
+    top:8px;
+    right:-32px;
+
+    width:95px;
+
+    font-size:10px;
+    padding:3px 0;
+  }
+
+}
+
+
+/* =====================================================
+   VERY SMALL PHONES
+===================================================== */
+
+@media(max-width:380px){
+
+  .card{
+    min-height:105px !important;
+    padding:14px 11px !important;
+  }
+
+  .card small{
+    font-size:13px !important;
+  }
+
+  .card h3{
+    font-size:18px !important;
+  }
+
+  .card p{
+    font-size:12px !important;
+  }
+
+  .card strong{
+    min-width:88px !important;
+    height:62px !important;
+    font-size:40px !important;
+    padding:3px 9px !important;
+  }
+
+                 }
