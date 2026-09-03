@@ -1048,3 +1048,70 @@ footer{
   }
 
   }
+/* =========================================
+   LIVE NEON — ORIGINAL COMPACT SIZE
+   DESIGN SAME, SIZE NEXT JITNA
+========================================= */
+
+#live .card{
+  min-height:0 !important;
+  height:148px !important;
+  padding:15px 17px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+
+/* LEFT SIDE */
+#live .card h3{
+  margin:4px 0 !important;
+  font-size:18px !important;
+}
+
+#live .card p{
+  margin:0 !important;
+  font-size:14px !important;
+}
+
+/* RESULT NUMBER BOX */
+#live .card strong{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  min-width:120px !important;
+  width:auto !important;
+  height:70px !important;
+
+  padding:5px 14px !important;
+  margin:0 !important;
+
+  font-size:32px !important;
+  line-height:1 !important;
+
+  box-sizing:border-box !important;
+}
+
+/* MOBILE */
+@media(max-width:520px){
+
+  #live .card{
+    height:148px !important;
+    min-height:148px !important;
+    padding:15px 17px !important;
+  }
+
+  #live .card h3{
+    font-size:18px !important;
+  }
+
+  #live .card p{
+    font-size:14px !important;
+  }
+
+  #live .card strong{
+    min-width:120px !important;
+    height:70px !important;
+    padding:5px 10px !important;
+    font-size:30px !important;
+  }
+    }
