@@ -1115,3 +1115,140 @@ footer{
     font-size:30px !important;
   }
     }
+/* =====================================================
+   ONLY LIVE RESULT — PURPLE NEON DESIGN
+   NEXT BOXES WILL STAY NORMAL
+===================================================== */
+
+#live .card{
+  position:relative !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+
+  min-height:118px !important;
+  height:118px !important;
+
+  padding:18px 22px !important;
+  margin:0 !important;
+
+  background:
+    radial-gradient(circle at 75% 50%, #211044 0%, #0b0718 55%, #070511 100%) !important;
+
+  border:3px solid #a020ff !important;
+  border-radius:28px !important;
+
+  box-shadow:
+    0 0 8px #a020ff,
+    0 0 18px rgba(160,32,255,.75),
+    inset 0 0 22px rgba(160,32,255,.18) !important;
+
+  overflow:hidden !important;
+}
+
+/* LIVE TIME */
+#live .card small{
+  color:#c66cff !important;
+  font-size:17px !important;
+  font-weight:800 !important;
+  text-shadow:0 0 8px rgba(198,108,255,.8) !important;
+}
+
+/* GAME NAME */
+#live .card h3{
+  color:#f5f1ff !important;
+  font-size:23px !important;
+  font-weight:900 !important;
+  margin:7px 0 0 !important;
+  letter-spacing:.5px !important;
+}
+
+/* RESULT NUMBER */
+#live .card strong{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  min-width:145px !important;
+  height:70px !important;
+
+  padding:0 18px !important;
+
+  color:#d889ff !important;
+
+  background:rgba(74,20,105,.28) !important;
+
+  border:3px solid #a020ff !important;
+  border-radius:20px !important;
+
+  font-size:38px !important;
+  font-weight:900 !important;
+  letter-spacing:1px !important;
+
+  text-shadow:
+    0 0 5px #fff,
+    0 0 12px #d879ff,
+    0 0 25px #a020ff !important;
+
+  box-shadow:
+    inset 0 0 15px rgba(160,32,255,.22),
+    0 0 10px rgba(160,32,255,.65) !important;
+}
+
+/* NEW RIBBON */
+#live .card::after{
+  content:"NEW" !important;
+
+  position:absolute !important;
+  top:12px !important;
+  right:-34px !important;
+
+  width:115px !important;
+  padding:7px 0 !important;
+
+  background:#b83cff !important;
+  color:#100018 !important;
+
+  text-align:center !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+
+  transform:rotate(45deg) !important;
+
+  box-shadow:0 0 12px rgba(184,60,255,.8) !important;
+}
+
+/* SMALL PHONE */
+@media(max-width:520px){
+
+  #live .card{
+    min-height:118px !important;
+    height:118px !important;
+    padding:16px 18px !important;
+    border-radius:27px !important;
+  }
+
+  #live .card small{
+    font-size:16px !important;
+  }
+
+  #live .card h3{
+    font-size:21px !important;
+  }
+
+  #live .card strong{
+    min-width:125px !important;
+    height:62px !important;
+    padding:0 13px !important;
+    font-size:32px !important;
+    border-radius:18px !important;
+  }
+
+  #live .card::after{
+    top:11px !important;
+    right:-37px !important;
+    width:115px !important;
+    font-size:12px !important;
+  }
+}
